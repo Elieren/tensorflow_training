@@ -1,9 +1,9 @@
 import os
-from pydub import picturesSegment
+from pydub import AudioSegment
 
 # Пути к папке с файлами MP3 и папке, куда сохранять файлы WAV
-mp3_folder = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\music_MP3'
-wav_folder = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\music_WAV'
+mp3_folder = 'C:\\Users\\kazan\\Desktop\\terror'
+wav_folder = 'C:\\Users\\kazan\\Desktop\\Terror_1'
 
 # Создание папки для сохранения WAV файлов, если она не существует
 if not os.path.exists(wav_folder):
@@ -13,7 +13,7 @@ if not os.path.exists(wav_folder):
 for file_name in os.listdir(mp3_folder):
     if file_name.endswith('.mp3'):
         # Загрузка файла MP3 с помощью библиотеки pydub
-        pictures = picturesSegment.from_mp3(os.path.join(mp3_folder, file_name))
+        pictures = AudioSegment.from_mp3(os.path.join(mp3_folder, file_name))
 
         # Сохранение файла WAV с тем же названием в другую папку
         file_name = os.path.splitext(file_name)[0] + '.wav'

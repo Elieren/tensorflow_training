@@ -116,42 +116,25 @@ print(len(object_1))
 features = []
 labels = []
 
+# Путь к папке с аудиофайлами
+audio_folder = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\Pictures'
+
 # Список файлов в папке
-pictures_Cat_files = os.listdir('C:\\Users\\kazan\\Desktop\\Cat')
-pictures_Dog_files = os.listdir('C:\\Users\\kazan\\Desktop\\Dog')
-pictures_Mouse_files = os.listdir('C:\\Users\\kazan\\Desktop\\Mouse')
-pictures_Snake_files = os.listdir('C:\\Users\\kazan\\Desktop\\Snake')
+audio_files = os.listdir(audio_folder)
 
 # Инициализация списков признаков и меток жанров
 
 # Перебор каждого файла в папке
-for a, picture_file in enumerate(pictures_Cat_files):
-    file_path = 'C:\\Users\\kazan\\Desktop\\Cat\\' + picture_file
-
-    features.append(get_feature(file_path))
-    labels.append(0)
-    print(picture_file)
-
-for a, picture_file in enumerate(pictures_Dog_files):
-    file_path = 'C:\\Users\\kazan\\Desktop\\Dog\\' + picture_file
-
-    features.append(get_feature(file_path))
-    labels.append(1)
-    print(picture_file)
-
-for a, picture_file in enumerate(pictures_Mouse_files):
-    file_path = 'C:\\Users\\kazan\\Desktop\\Mouse\\' + picture_file
-
-    features.append(get_feature(file_path))
-    labels.append(2)
-    print(picture_file)
-
-for a, picture_file in enumerate(pictures_Snake_files):
-    file_path = 'C:\\Users\\kazan\\Desktop\\Snake\\' + picture_file
-
-    features.append(get_feature(file_path))
-    labels.append(3)
-    print(picture_file)
+for genre_folder in os.listdir(audio_folder):
+    genre_path = os.path.join(audio_folder, genre_folder)
+    if os.path.isdir(genre_path) and any(substring in genre_folder for substring in genres_1):
+        # Перебор каждого WAV файла в папке-жанре
+        for audio_file in os.listdir(genre_path):
+            if audio_file.endswith('.jpg'):
+                # Добавление признаков и метки жанра в соответствующие списки
+                genre = [substring for substring in genres_1 if substring in genre_folder][0]
+                features.append(get_feature(os.path.join(genre_path, audio_file)))
+                labels.append(genres_1.index(genre))
 
 #-------------------------------------------------------------------------#
 
