@@ -5,13 +5,13 @@ import librosa
 
 # Загрузка данных о жанрах из файла
 with open('C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\genres_final.txt') as f:
-    genre_list = f.read().splitlines()
+    object_list = f.read().splitlines()
 
 # Путь к папке с аудиофайлами
-audio_folder = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\music_WAV'
+pictures_folder = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\music_WAV'
 
 # Список файлов в папке
-audio_files = os.listdir(audio_folder)
+pictures_files = os.listdir(pictures_folder)
 
 # Инициализация списков признаков и меток жанров
 X = []
@@ -19,18 +19,18 @@ y = []
 
 # Перебор каждого файла в папке
 a = 0
-for audio_file in audio_files:
+for pictures_file in pictures_files:
     # Загрузка аудиоданных с помощью librosa
-    audio, sr = librosa.load(os.path.join(audio_folder, audio_file), sr=44100)
+    pictures, sr = librosa.load(os.path.join(pictures_folder, pictures_file), sr=44100)
     # Преобразование стерео в моно-канал, если нужно
-    if len(audio.shape) > 1:
-        audio = librosa.to_mono(audio)
+    if len(pictures.shape) > 1:
+        pictures = librosa.to_mono(pictures)
     # Преобразование аудио в волну
-    waveform = librosa.feature.melspectrogram(y=audio, sr=sr, n_mels=128)
+    waveform = librosa.feature.hog_feature(y=pictures, sr=sr, n_mels=128)
     # Добавление признаков и метки жанра в соответствующие списки
     X.append(waveform.flatten())
     # Получение метки жанра из имени файла
-    y.append(genre_list[a])
+    y.append(object_list[a])
     a += 1
 
 # Создание обучающего и тестового наборов данных
@@ -62,7 +62,7 @@ model = tf.keras.Sequential([
     tf.keras.layers.Dropout(0.2),
     tf.keras.layers.Dense(128, activation='relu'),
     tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(len(genre_list), activation='softmax')
+    tf.keras.layers.Dense(len(object_list), activation='softmax')
 ])
 
 # Преобразовать массивы NumPy в трехмерные массивы
@@ -86,13 +86,13 @@ history = model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_tes
 history = model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test))
 
 # Загрузка аудиофайла
-audio_file = librosa.load('test_audio_file.wav', sr=44100)
+pictures_file = librosa.load('test_pictures_file.wav', sr=44100)
 
 # Извлечение признаков аудиофайла
-audio_features = librosa.feature.melspectrogram(y=audio_file[0], sr=audio_file[1], n_mels=128)
-audio_features = audio_features.flatten().reshape(1, -1)
+pictures_features = librosa.feature.hog_feature(y=pictures_file[0], sr=pictures_file[1], n_mels=128)
+pictures_features = pictures_features.flatten().reshape(1, -1)
 
 # Применение модели для предсказания жанра
-predictions = model.predict(audio_features)
-predicted_genre = genre_list[np.argmax(predictions)]
+predictions = model.predict(pictures_features)
+predicted_genre = object_list[np.argmax(predictions)]
 print("Predicted genre: ", predicted_genre)

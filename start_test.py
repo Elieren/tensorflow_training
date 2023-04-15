@@ -8,29 +8,29 @@ from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 import glob
 
 # Функция для извлечения признаков из аудиофайла
-def extract_feature(file_name, mfcc, chroma, mel):
+def extract_feature(file_name, img, sobel_edges, mel):
     with  librosa.load(file_name) as music:
         x, sr = music
-        if chroma:
+        if sobel_edges:
             stft = np.abs(librosa.stft(x))
             result = np.array([])
-        if mfcc:
-            mfccs = np.mean(librosa.feature.mfcc(y=x, sr=sr, n_mfcc=40).T, axis=0)
-            result = np.hstack((result, mfccs))
-        if chroma:
-            chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sr).T,axis=0)
-            result = np.hstack((result, chroma))
+        if img:
+            imgs = np.mean(librosa.feature.img(y=x, sr=sr, n_img=40).T, axis=0)
+            result = np.hstack((result, imgs))
+        if sobel_edges:
+            sobel_edges = np.mean(librosa.feature.sobel_edges_stft(S=stft, sr=sr).T,axis=0)
+            result = np.hstack((result, sobel_edges))
         if mel:
-            mel = np.mean(librosa.feature.melspectrogram(x, sr=sr).T,axis=0)
+            mel = np.mean(librosa.feature.hog_feature(x, sr=sr).T,axis=0)
             result = np.hstack((result, mel))
     return result
 
 # Определение функции для чтения и извлечения признаков из каждого аудиофайла
-def parse_audio_files(parent_dir, sub_dirs, file_ext='*.wav'):
+def parse_pictures_files(parent_dir, sub_dirs, file_ext='*.wav'):
     features, labels = np.empty((0, 193)), np.empty(0)
     for label, sub_dir in enumerate(sub_dirs):
         for fn in glob.glob(os.path.join(parent_dir, sub_dir, file_ext)):
-            sound = extract_feature(fn, mfcc=True, chroma=True, mel=True)
+            sound = extract_feature(fn, img=True, sobel_edges=True, mel=True)
             features = np.vstack([features, sound])
             labels = np.append(labels, fn.split('/')[-2])
     return np.array(features), np.array(labels, dtype=np.int)
@@ -46,7 +46,7 @@ print(genres)
 parent_dir = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\music_WAV'
 sub_dirs = genres
 print(f"Extracting features ...\n{'-'*45}")
-features, labels = parse_audio_files(parent_dir, sub_dirs)
+features, labels = parse_pictures_files(parent_dir, sub_dirs)
 
 # Использование LabelEncoder для преобразования меток в целочисленный формат
 le = LabelEncoder()

@@ -1,9 +1,9 @@
 import os
 
 # Путь к папке с аудиофайлами
-audio_folder = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\music_WAV'
+pictures_folder = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\music_WAV'
 
 # Список файлов в папке
-audio_files = os.listdir(audio_folder)
+pictures_files = os.listdir(pictures_folder)
 
-print(audio_files)
+print(pictures_files)
