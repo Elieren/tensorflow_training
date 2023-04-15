@@ -26,7 +26,7 @@ def load_image(file_path):
     return img
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
-def get_hog_feature(img):
+#def get_hog_feature(img):
     img = io.imread(file_path)
     hog_feature, hog_image = hog(img, orientations=9, pixels_per_cell=(8, 8),
                                 cells_per_block=(2, 2), visualize=True)
