@@ -2,8 +2,8 @@ import os
 from pydub import AudioSegment
 
 # Пути к папке с файлами MP3 и папке, куда сохранять файлы WAV
-mp3_folder = 'C:\\Users\\kazan\\Desktop\\terror'
-wav_folder = 'C:\\Users\\kazan\\Desktop\\Terror_1'
+mp3_folder = 'C:\\Users\\kazan\\Desktop\\12'
+wav_folder = 'C:\\Users\\kazan\\Desktop\\13'
 
 # Создание папки для сохранения WAV файлов, если она не существует
 if not os.path.exists(wav_folder):

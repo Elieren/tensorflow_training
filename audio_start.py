@@ -58,7 +58,7 @@ def get_feature(file_path):
 
 #---------------------------------------------------------------------------------#
 
-genres_1 = ['Rock','Phonk','Synthwave','Jazz','EDM','Metal','Nightcore','Dubstep','Score','Frenchcore','Uptempo','Speedcore','Terror']
+genres_1 = ['Rock','Phonk','Synthwave','Jazz','EDM','Metal','Nightcore','Dubstep','Score','Frenchcore','Uptempo','Speedcore','Terror','Synth-rock']
 print(len(genres_1))
 features = []
 labels = []
