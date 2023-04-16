@@ -64,7 +64,7 @@ features = []
 labels = []
 
 # Путь к папке с аудиофайлами
-audio_folder = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\music_WAV'
+audio_folder = 'info\\music_WAV'
 
 # Список файлов в папке
 audio_files = os.listdir(audio_folder)
@@ -150,22 +150,3 @@ feature = get_feature(file_path)
 y = model.predict(feature.reshape(1,498))
 ind = numpy.argmax(y)
 print(genres_1[ind], '=> EDM (Zenith)')
-
-'''
-example_file = "C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\music_WAV\\Cyberpunk_2077_-_The_Ballad_of_Buck_Ravers_by_SAMURAI_Refused_69859526(rock).wav"
-mfcc = get_mfcc(example_file)
-pyplot.imshow(mfcc, interpolation='nearest', aspect='auto')
-pyplot.show()
-
-melspectrogram = get_melspectrogram(example_file)
-pyplot.imshow(melspectrogram, interpolation='nearest', aspect='auto')
-pyplot.show()
-
-chroma = get_chroma_vector(example_file)
-pyplot.imshow(chroma, interpolation='nearest', aspect='auto')
-pyplot.show()
-
-tntz = get_tonnetz(example_file)
-pyplot.imshow(tntz , interpolation='nearest', aspect='auto')
-pyplot.show()
-'''

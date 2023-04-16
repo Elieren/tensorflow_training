@@ -3,6 +3,8 @@ from tensorflow import keras
 import tensorflow
 import pickle
 
+shape = ''
+
 object_1 = ['Cat','Dog','Mouse','Snake']
 print(len(object_1))
 features = []
@@ -25,7 +27,7 @@ labels_test = labels[156:186]
 
 tensorflow.device('/device:GPU:0')
 
-inputs = keras.Input(shape=(4608), name="feature")
+inputs = keras.Input(shape=(shape), name="feature")
 x = keras.layers.Dense(8192, activation="relu", name="dense_1")(inputs)
 x = keras.layers.Dense(4096, activation="relu", name="dense_2")(x)
 x = keras.layers.Dense(4096, activation="relu", name="dense_3")(x)
