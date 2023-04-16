@@ -14,10 +14,13 @@ from PIL import Image
 import cv2
 from io import BytesIO
 
+scale = ''
+
 def load_image(file_path):
+    global scale
     img = Image.open(file_path)
     img = img.convert('L') # конвертация в оттенки серого
-    img = img.resize((512, 512)) # изменение размера до 100x100
+    img = img.resize((scale, scale)) 
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -28,8 +31,9 @@ def load_image(file_path):
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
 def get_hog_feature(img):
+    global scale
     img = Image.open(img)
-    img = img.resize((512, 512)) # изменение размера до 100x100
+    img = img.resize((scale, scale)) 
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -42,8 +46,9 @@ def get_hog_feature(img):
 
 # Функция для вычисления границ объектов с помощью оператора Собеля
 def get_sobel_edges(img):
+    global scale
     img = Image.open(img)
-    img = img.resize((512, 512)) # изменение размера до 100x100
+    img = img.resize((scale, scale)) 
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -55,8 +60,9 @@ def get_sobel_edges(img):
 
 # Функция для вычисления контуров объектов 
 def get_contours(img):
+    global scale
     my_photo = cv2.imread(img)
-    my_photo = cv2.resize(my_photo, (512,512))
+    my_photo = cv2.resize(my_photo, (scale,scale))
     filterd_image  = cv2.medianBlur(my_photo,7)
     img_grey = cv2.cvtColor(filterd_image,cv2.COLOR_BGR2GRAY)
     #set a thresh
@@ -95,14 +101,14 @@ def get_feature(file_path):
     sobel_edges_feature = numpy.concatenate( (sobel_edges_mean, sobel_edges_min, sobel_edges_max) )
 
     # Extracting tonnetz feature
-    #contours = get_contours(file_path)
-    #contours_array = numpy.array(contours)
-    #contours_mean = contours_array.mean(axis=0)
-    #contours_min = contours_array.min(axis=0)
-    #contours_max = contours_array.max(axis=0)
-    #contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
+    contours = get_contours(file_path)
+    contours_array = numpy.array(contours)
+    contours_mean = contours_array.mean(axis=0)
+    contours_min = contours_array.min(axis=0)
+    contours_max = contours_array.max(axis=0)
+    contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
-    feature = numpy.concatenate( (img_feature, sobel_edges_feature, hog_feature_feature) )
+    feature = numpy.concatenate( (img_feature, sobel_edges_feature, hog_feature_feature, contours_feature) )
     return feature
 
 #---------------------------------------------------------------------------------#

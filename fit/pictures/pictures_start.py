@@ -13,10 +13,13 @@ from PIL import Image
 import cv2
 from io import BytesIO
 
+scale = ''
+
 def load_image(file_path):
+    global scale
     img = Image.open(file_path)
     img = img.convert('L') # конвертация в оттенки серого
-    img = img.resize((512, 512)) # изменение размера до 100x100
+    img = img.resize((scale, scale))
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -27,8 +30,9 @@ def load_image(file_path):
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
 def get_hog_feature(img):
+    global scale
     img = Image.open(img)
-    img = img.resize((512, 512)) # изменение размера до 100x100
+    img = img.resize((scale, scale)) 
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -41,8 +45,9 @@ def get_hog_feature(img):
 
 # Функция для вычисления границ объектов с помощью оператора Собеля
 def get_sobel_edges(img):
+    global scale
     img = Image.open(img)
-    img = img.resize((512, 512)) # изменение размера до 100x100
+    img = img.resize((scale, scale)) 
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -54,8 +59,9 @@ def get_sobel_edges(img):
 
 # Функция для вычисления контуров объектов 
 def get_contours(img):
+    global scale
     my_photo = cv2.imread(img)
-    my_photo = cv2.resize(my_photo, (512,512))
+    my_photo = cv2.resize(my_photo, (scale,scale))
     filterd_image  = cv2.medianBlur(my_photo,7)
     img_grey = cv2.cvtColor(filterd_image,cv2.COLOR_BGR2GRAY)
     #set a thresh
@@ -159,9 +165,9 @@ x = keras.layers.Dense(8192, activation="relu", name="dense_1")(inputs)
 x = keras.layers.Dense(4096, activation="relu", name="dense_2")(x)
 x = keras.layers.Dense(4096, activation="relu", name="dense_3")(x)
 x = keras.layers.Dense(1024, activation="relu", name="dense_4")(x)
-x = keras.layers.Dense(512, activation="relu", name="dense_5")(x)
+x = keras.layers.Dense(scale, activation="relu", name="dense_5")(x)
 x = keras.layers.Dense(350, activation="relu", name="dense_6")(x)
-x = keras.layers.Dense(512, activation="relu", name="dense_7")(x)
+x = keras.layers.Dense(scale, activation="relu", name="dense_7")(x)
 x = keras.layers.Dense(1024, activation="relu", name="dense_8")(x)
 x = keras.layers.Dense(128, activation="relu", name="dense_9")(x)
 x = keras.layers.Dense(64, activation="relu", name="dense_10")(x)
