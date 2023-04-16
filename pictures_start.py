@@ -16,7 +16,7 @@ from io import BytesIO
 def load_image(file_path):
     img = Image.open(file_path)
     img = img.convert('L') # конвертация в оттенки серого
-    img = img.resize((60, 60)) # изменение размера до 100x100
+    img = img.resize((512, 512)) # изменение размера до 100x100
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -26,16 +26,23 @@ def load_image(file_path):
     return img
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
-#def get_hog_feature(img):
-    img = io.imread(file_path)
+def get_hog_feature(img):
+    img = Image.open(img)
+    img = img.resize((512, 512)) # изменение размера до 100x100
+    buf = BytesIO() # создание байтового буфера
+    img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
+    file_bytes = buf.getvalue() # получение байтов из буфера
+    img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8), cv2.IMREAD_COLOR) # декодирование JPEG в изображение cv2 (цветное)
+    img = tensorflow.image.convert_image_dtype(img, tensorflow.float64) # преобразование изображения в формат float64
     hog_feature, hog_image = hog(img, orientations=9, pixels_per_cell=(8, 8),
-                                cells_per_block=(2, 2), visualize=True)
-    return hog_feature
+                                cells_per_block=(2, 2), visualize=True, channel_axis=2)
+    hog_image = numpy.array(hog_image)
+    return hog_image
 
 # Функция для вычисления границ объектов с помощью оператора Собеля
 def get_sobel_edges(img):
-    img = Image.open(file_path)
-    img = img.resize((60, 60)) # изменение размера до 100x100
+    img = Image.open(img)
+    img = img.resize((512, 512)) # изменение размера до 100x100
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -48,19 +55,7 @@ def get_sobel_edges(img):
 # Функция для вычисления контуров объектов 
 def get_contours(img):
     my_photo = cv2.imread(img)
-    scale_percent = 99
-    k = [60, 60]
-    width = int(my_photo.shape[1] * scale_percent / 100)
-    height = int(my_photo.shape[0] * scale_percent / 100)
-    while True:
-        if (k[0] < width) or (k[1] < height):
-            scale_percent -= 1
-            width = int(my_photo.shape[1] * scale_percent / 100)
-            height = int(my_photo.shape[0] * scale_percent / 100)
-        else:
-            break
-    dim = (width, height)
-    my_photo = cv2.resize(my_photo, dim)
+    my_photo = cv2.resize(my_photo, (512,512))
     filterd_image  = cv2.medianBlur(my_photo,7)
     img_grey = cv2.cvtColor(filterd_image,cv2.COLOR_BGR2GRAY)
     #set a thresh
@@ -85,11 +80,11 @@ def get_feature(file_path):
     img_feature = numpy.concatenate( (img_mean, img_min, img_max) )
 
     # Extracting Mel Spectrogram feature
-    #hog_feature = get_hog_feature(file_path)
-    #hog_feature_mean = hog_feature.mean(axis=1)
-    #hog_feature_min = hog_feature.min(axis=1)
-    #hog_feature_max = hog_feature.max(axis=1)
-    #hog_feature_feature = numpy.concatenate( (hog_feature_mean, hog_feature_min, hog_feature_max) )
+    hog_feature = get_hog_feature(file_path)
+    hog_feature_mean = hog_feature.mean(axis=1)
+    hog_feature_min = hog_feature.min(axis=1)
+    hog_feature_max = hog_feature.max(axis=1)
+    hog_feature_feature = numpy.concatenate( (hog_feature_mean, hog_feature_min, hog_feature_max) )
 
     # Extracting sobel_edges vector feature
     sobel_edges = get_sobel_edges(file_path)
@@ -99,14 +94,14 @@ def get_feature(file_path):
     sobel_edges_feature = numpy.concatenate( (sobel_edges_mean, sobel_edges_min, sobel_edges_max) )
 
     # Extracting tonnetz feature
-    #contours = get_contours(file_path)
-    #contours_array = numpy.array(contours)
-    #contours_mean = contours_array.mean(axis=0)
-    #contours_min = contours_array.min(axis=0)
-    #contours_max = contours_array.max(axis=0)
-    #contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
+    contours = get_contours(file_path)
+    contours_array = numpy.array(contours)
+    contours_mean = contours_array.mean(axis=0)
+    contours_min = contours_array.min(axis=0)
+    contours_max = contours_array.max(axis=0)
+    contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
-    feature = numpy.concatenate( (img_feature, sobel_edges_feature) )
+    feature = numpy.concatenate( (img_feature, sobel_edges_feature, hog_feature_feature, contours_feature) )
     return feature
 
 #---------------------------------------------------------------------------------#
@@ -117,7 +112,7 @@ features = []
 labels = []
 
 # Путь к папке с аудиофайлами
-audio_folder = 'C:\\Users\\kazan\\Videos\\git\\music_genres\\info\\Pictures'
+audio_folder = 'info\\Pictures'
 
 # Список файлов в папке
 audio_files = os.listdir(audio_folder)
@@ -127,14 +122,15 @@ audio_files = os.listdir(audio_folder)
 # Перебор каждого файла в папке
 for genre_folder in os.listdir(audio_folder):
     genre_path = os.path.join(audio_folder, genre_folder)
-    if os.path.isdir(genre_path) and any(substring in genre_folder for substring in genres_1):
+    if os.path.isdir(genre_path) and any(substring in genre_folder for substring in object_1):
         # Перебор каждого WAV файла в папке-жанре
         for audio_file in os.listdir(genre_path):
             if audio_file.endswith('.jpg'):
                 # Добавление признаков и метки жанра в соответствующие списки
-                genre = [substring for substring in genres_1 if substring in genre_folder][0]
+                genre = [substring for substring in object_1 if substring in genre_folder][0]
                 features.append(get_feature(os.path.join(genre_path, audio_file)))
-                labels.append(genres_1.index(genre))
+                labels.append(object_1.index(genre))
+                print(genre)
 
 #-------------------------------------------------------------------------#
 
@@ -149,23 +145,28 @@ features = features_array[permutations]
 
 labels = numpy.array(labels)[permutations]
 
-features_train = features[0:50]
-labels_train = labels[0:50]
+features_train = features[0:104]
+labels_train = labels[0:104]
 
-features_val = features[50:65]
-labels_val = labels[50:65]
+features_val = features[104:156]
+labels_val = labels[104:156]
 
-features_test = features[65:85]
-labels_test = labels[65:85]
+features_test = features[156:186]
+labels_test = labels[156:186]
 
-inputs = keras.Input(shape=(360), name="feature")
-x = keras.layers.Dense(1024, activation="relu", name="dense_1")(inputs)
-x = keras.layers.Dense(512, activation="relu", name="dense_2")(x)
-x = keras.layers.Dense(350, activation="relu", name="dense_3")(x)
-x = keras.layers.Dense(256, activation="relu", name="dense_4")(x)
-x = keras.layers.Dense(128, activation="relu", name="dense_5")(x)
-x = keras.layers.Dense(64, activation="relu", name="dense_6")(x)
-x = keras.layers.Dense(32, activation="relu", name="dense_7")(x)
+inputs = keras.Input(shape=(2304), name="feature")
+x = keras.layers.Dense(8192, activation="relu", name="dense_1")(inputs)
+x = keras.layers.Dense(4096, activation="relu", name="dense_2")(x)
+x = keras.layers.Dense(4096, activation="relu", name="dense_3")(x)
+x = keras.layers.Dense(1024, activation="relu", name="dense_4")(x)
+x = keras.layers.Dense(512, activation="relu", name="dense_5")(x)
+x = keras.layers.Dense(350, activation="relu", name="dense_6")(x)
+x = keras.layers.Dense(512, activation="relu", name="dense_7")(x)
+x = keras.layers.Dense(1024, activation="relu", name="dense_8")(x)
+x = keras.layers.Dense(128, activation="relu", name="dense_9")(x)
+x = keras.layers.Dense(64, activation="relu", name="dense_10")(x)
+x = keras.layers.Dense(32, activation="relu", name="dense_11")(x)
+x = keras.layers.Dense(16, activation="relu", name="dense_12")(x)
 outputs = keras.layers.Dense(4, activation="softmax", name="predictions")(x)
 
 model = keras.Model(inputs=inputs, outputs=outputs)
@@ -185,27 +186,32 @@ labels_train = numpy.array(labels_train)
 features_train = tensorflow.convert_to_tensor(features_train, dtype=tensorflow.float32)
 labels_train = tensorflow.convert_to_tensor(labels_train, dtype=tensorflow.float32)
 
-model.fit(x=features_train,y=labels_train,verbose=1,validation_data=(features_val , labels_val), epochs=1000)
+model.fit(x=features_train,y=labels_train,verbose=1,validation_data=(features_val , labels_val), epochs=2000)
 
 score = model.evaluate(x=features_test,y=labels_test, verbose=0)
 print(score)
 print('Accuracy : ' + str(score[1]*100) + '%')
 
-
-file_path = "C:\\Users\\kazan\\Desktop\\Dog\\0.jpg"
+file_path = "C:\\Users\\kazan\\Desktop\\1.jpg"
+img = io.imread(file_path)
+print(img.shape)
 feature = get_feature(file_path)
-y = model.predict(feature.reshape(1,360))
+y = model.predict(feature.reshape(1,2304))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Dog')
 
-file_path = "C:\\Users\\kazan\\Desktop\\1.jpg"
+file_path = "C:\\Users\\kazan\\Desktop\\2.jpg"
+img = io.imread(file_path)
+print(img.shape)
 feature = get_feature(file_path)
-y = model.predict(feature.reshape(1,360))
+y = model.predict(feature.reshape(1,2304))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Cat')
 
-file_path = "C:\\Users\\kazan\\Desktop\\Snake\\26.jpg"
+file_path = "C:\\Users\\kazan\\Desktop\\4.jpg"
+img = io.imread(file_path)
+print(img.shape)
 feature = get_feature(file_path)
-y = model.predict(feature.reshape(1,360))
+y = model.predict(feature.reshape(1,2304))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Shake')
