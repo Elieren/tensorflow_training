@@ -12,11 +12,11 @@ from skimage.measure import find_contours
 from PIL import Image
 import cv2
 from io import BytesIO
-from tensorflow.keras.models import load_model
 
 def load_image(file_path):
     img = Image.open(file_path)
     img = img.convert('L') # конвертация в оттенки серого
+    img = img.resize((512, 512)) # изменение размера до 100x100
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -28,6 +28,7 @@ def load_image(file_path):
 # Функция для вычисления гистограммы направленных градиентов (HOG)
 def get_hog_feature(img):
     img = Image.open(img)
+    img = img.resize((512, 512)) # изменение размера до 100x100
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -41,6 +42,7 @@ def get_hog_feature(img):
 # Функция для вычисления границ объектов с помощью оператора Собеля
 def get_sobel_edges(img):
     img = Image.open(img)
+    img = img.resize((512, 512)) # изменение размера до 100x100
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -53,6 +55,7 @@ def get_sobel_edges(img):
 # Функция для вычисления контуров объектов 
 def get_contours(img):
     my_photo = cv2.imread(img)
+    my_photo = cv2.resize(my_photo, (512,512))
     filterd_image  = cv2.medianBlur(my_photo,7)
     img_grey = cv2.cvtColor(filterd_image,cv2.COLOR_BGR2GRAY)
     #set a thresh
@@ -66,7 +69,7 @@ def get_contours(img):
     cv2.drawContours(img_contours, contours, -1, (255,255,255), 1)
     return img_contours
 
-    #----------------------------------------------------------------------------------#
+#----------------------------------------------------------------------------------#
 
 def get_feature(file_path):
     # Extracting img feature
@@ -104,29 +107,111 @@ def get_feature(file_path):
 #---------------------------------------------------------------------------------#
 
 object_1 = ['Cat','Dog','Mouse','Snake']
+print(len(object_1))
+features = []
+labels = []
 
-loaded_model = load_model('my_model.h5')
+# Путь к папке с аудиофайлами
+audio_folder = 'info\\Pictures'
 
-file_path = "C:\\Users\\kazan\\Desktop\\1.jpg"
+# Список файлов в папке
+audio_files = os.listdir(audio_folder)
+
+# Инициализация списков признаков и меток жанров
+
+# Перебор каждого файла в папке
+for genre_folder in os.listdir(audio_folder):
+    genre_path = os.path.join(audio_folder, genre_folder)
+    if os.path.isdir(genre_path) and any(substring in genre_folder for substring in object_1):
+        # Перебор каждого WAV файла в папке-жанре
+        for audio_file in os.listdir(genre_path):
+            if audio_file.endswith('.jpg'):
+                # Добавление признаков и метки жанра в соответствующие списки
+                genre = [substring for substring in object_1 if substring in genre_folder][0]
+                features.append(get_feature(os.path.join(genre_path, audio_file)))
+                labels.append(object_1.index(genre))
+                print(genre)
+
+#-------------------------------------------------------------------------#
+
+# Предполагая, что `features` - это список списков разной длины
+max_length = max(len(x) for x in features)
+features_array = numpy.zeros((len(features), max_length), dtype=numpy.float64)
+for i, row in enumerate(features):
+    features_array[i,:len(row)] = row
+
+permutations = numpy.random.permutation(len(features))
+features = features_array[permutations]
+
+labels = numpy.array(labels)[permutations]
+
+features_train = features[0:104]
+labels_train = labels[0:104]
+
+features_val = features[104:156]
+labels_val = labels[104:156]
+
+features_test = features[156:186]
+labels_test = labels[156:186]
+
+inputs = keras.Input(shape=(2304), name="feature")
+x = keras.layers.Dense(8192, activation="relu", name="dense_1")(inputs)
+x = keras.layers.Dense(4096, activation="relu", name="dense_2")(x)
+x = keras.layers.Dense(4096, activation="relu", name="dense_3")(x)
+x = keras.layers.Dense(1024, activation="relu", name="dense_4")(x)
+x = keras.layers.Dense(512, activation="relu", name="dense_5")(x)
+x = keras.layers.Dense(350, activation="relu", name="dense_6")(x)
+x = keras.layers.Dense(512, activation="relu", name="dense_7")(x)
+x = keras.layers.Dense(1024, activation="relu", name="dense_8")(x)
+x = keras.layers.Dense(128, activation="relu", name="dense_9")(x)
+x = keras.layers.Dense(64, activation="relu", name="dense_10")(x)
+x = keras.layers.Dense(32, activation="relu", name="dense_11")(x)
+x = keras.layers.Dense(16, activation="relu", name="dense_12")(x)
+outputs = keras.layers.Dense(4, activation="softmax", name="predictions")(x)
+
+model = keras.Model(inputs=inputs, outputs=outputs)
+
+model.compile(
+    # Optimizer
+    optimizer=keras.optimizers.RMSprop(),
+    # Loss function to minimize
+    loss=keras.losses.SparseCategoricalCrossentropy(),
+    # List of metrics to monitor
+    metrics=[keras.metrics.SparseCategoricalAccuracy()],
+)
+
+features_train = numpy.array(features_train)
+labels_train = numpy.array(labels_train)
+
+features_train = tensorflow.convert_to_tensor(features_train, dtype=tensorflow.float32)
+labels_train = tensorflow.convert_to_tensor(labels_train, dtype=tensorflow.float32)
+
+model.fit(x=features_train,y=labels_train,verbose=1,validation_data=(features_val , labels_val), epochs=2000)
+
+score = model.evaluate(x=features_test,y=labels_test, verbose=0)
+print(score)
+print('Accuracy : ' + str(score[1]*100) + '%')
+
+file_path = "1.jpg"
 img = io.imread(file_path)
 print(img.shape)
 feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,1536))
+y = model.predict(feature.reshape(1,2304))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Dog')
 
-file_path = "C:\\Users\\kazan\\Desktop\\2.jpg"
+file_path = "2.jpg"
 img = io.imread(file_path)
 print(img.shape)
 feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,1536))
+y = model.predict(feature.reshape(1,2304))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Cat')
 
-file_path = "C:\\Users\\kazan\\Desktop\\4.jpg"
+file_path = "4.jpg"
 img = io.imread(file_path)
 print(img.shape)
 feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,1536))
+y = model.predict(feature.reshape(1,2304))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Shake')
