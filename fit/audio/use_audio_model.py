@@ -60,7 +60,7 @@ def get_feature(file_path):
 
 genres_1 = ['Rock','Phonk','Synthwave','Jazz','EDM','Metal','Nightcore','Dubstep','Score','Frenchcore','Uptempo','Speedcore','Terror','Synth-rock']
 
-loaded_model = load_model('my_model.h5')
+loaded_model = load_model('100_my_model.h5')
 
 file_path = "1.mp4.wav"
 feature = get_feature(file_path)
@@ -72,7 +72,7 @@ file_path = "2.wav"
 feature = get_feature(file_path)
 y = model.predict(feature.reshape(1,498))
 ind = numpy.argmax(y)
-print(genres_1[ind], '=> ?El Tigro')
+print(genres_1[ind], '=> Synthwavw (El Tigro)')
 
 file_path = "3.mp4.wav"
 feature = get_feature(file_path)
