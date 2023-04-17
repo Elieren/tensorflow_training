@@ -14,9 +14,14 @@ import cv2
 from io import BytesIO
 from tensorflow.keras.models import load_model
 
+scale = 80
+shape = 480
+
 def load_image(file_path):
+    global scale
     img = Image.open(file_path)
     img = img.convert('L') # конвертация в оттенки серого
+    img = img.resize((scale, scale))
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -27,7 +32,9 @@ def load_image(file_path):
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
 def get_hog_feature(img):
+    global scale
     img = Image.open(img)
+    img = img.resize((scale, scale)) 
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -40,7 +47,9 @@ def get_hog_feature(img):
 
 # Функция для вычисления границ объектов с помощью оператора Собеля
 def get_sobel_edges(img):
+    global scale
     img = Image.open(img)
+    img = img.resize((scale, scale)) 
     buf = BytesIO() # создание байтового буфера
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
@@ -52,7 +61,9 @@ def get_sobel_edges(img):
 
 # Функция для вычисления контуров объектов 
 def get_contours(img):
+    global scale
     my_photo = cv2.imread(img)
+    my_photo = cv2.resize(my_photo, (scale,scale))
     filterd_image  = cv2.medianBlur(my_photo,7)
     img_grey = cv2.cvtColor(filterd_image,cv2.COLOR_BGR2GRAY)
     #set a thresh
@@ -98,35 +109,29 @@ def get_feature(file_path):
     contours_max = contours_array.max(axis=0)
     contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
-    feature = numpy.concatenate( (img_feature, sobel_edges_feature, hog_feature_feature, contours_feature) )
+    feature = numpy.concatenate( (img_feature, sobel_edges_feature) )
     return feature
 
 #---------------------------------------------------------------------------------#
 
 object_1 = ['Cat','Dog','Mouse','Snake']
 
-loaded_model = load_model('my_model.h5')
+loaded_model = load_model('100_my_model.h5')
 
-file_path = "1.jpg"
-img = io.imread(file_path)
-print(img.shape)
+file_path = "C:\\Users\\kazan\\Desktop\\1.jpg"
 feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,1536))
+y = loaded_model.predict(feature.reshape(1,shape))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Dog')
 
-file_path = "2.jpg"
-img = io.imread(file_path)
-print(img.shape)
+file_path = "C:\\Users\\kazan\\Desktop\\3.jpg"
 feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,1536))
+y = loaded_model.predict(feature.reshape(1,shape))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Cat')
 
-file_path = "4.jpg"
-img = io.imread(file_path)
-print(img.shape)
+file_path = "C:\\Users\\kazan\\Desktop\\4.jpg"
 feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,1536))
+y = loaded_model.predict(feature.reshape(1,shape))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Shake')
