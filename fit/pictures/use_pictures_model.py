@@ -116,22 +116,22 @@ def get_feature(file_path):
 
 object_1 = ['Cat','Dog','Mouse','Snake']
 
-loaded_model = load_model('100_my_model.h5')
+loaded_model = load_model('my_model.h5')
 
-file_path = "C:\\Users\\kazan\\Desktop\\1.jpg"
-feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,shape))
-ind = numpy.argmax(y)
-print(object_1[ind], '=> Dog')
-
-file_path = "C:\\Users\\kazan\\Desktop\\3.jpg"
+file_path = "C:\\Users\\kazan\\Desktop\\5.jpg"
 feature = get_feature(file_path)
 y = loaded_model.predict(feature.reshape(1,shape))
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Cat')
 
-file_path = "C:\\Users\\kazan\\Desktop\\4.jpg"
+file_path = "C:\\Users\\kazan\\Desktop\\6.jpg"
 feature = get_feature(file_path)
 y = loaded_model.predict(feature.reshape(1,shape))
 ind = numpy.argmax(y)
-print(object_1[ind], '=> Shake')
+print(object_1[ind], '=> Cat')
+
+file_path = "C:\\Users\\kazan\\Desktop\\7.jpg"
+feature = get_feature(file_path)
+y = loaded_model.predict(feature.reshape(1,shape))
+ind = numpy.argmax(y)
+print(object_1[ind], '=> Cat')
