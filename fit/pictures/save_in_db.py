@@ -25,8 +25,9 @@ def load_image(file_path):
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
     img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8), cv2.IMREAD_GRAYSCALE) # декодирование JPEG в изображение cv2 в оттенках серого
-    img = tensorflow.image.convert_image_dtype(img, tensorflow.float64) # преобразование изображения в формат float64
+    img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     img = numpy.array(img)
+    img = img / 255
     return img
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
