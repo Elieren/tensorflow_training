@@ -122,21 +122,21 @@ loaded_model = load_model('my_model_pictures.h5')
 
 file_path = "C:\\Users\\kazan\\Desktop\\1.jpg"
 X = numpy.zeros((0, 128, 512))
-feature = get_feature(file_path)
+get_feature(file_path)
 y = loaded_model.predict(X)
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Dog')
 
 file_path = "C:\\Users\\kazan\\Desktop\\3.jpg"
 X = numpy.zeros((0, 128, 512))
-feature = get_feature(file_path)
+get_feature(file_path)
 y = loaded_model.predict(X)
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Cat')
 
 file_path = "C:\\Users\\kazan\\Desktop\\4.jpg"
 X = numpy.zeros((0, 128, 512))
-feature = get_feature(file_path)
+get_feature(file_path)
 y = loaded_model.predict(X)
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Shake')
