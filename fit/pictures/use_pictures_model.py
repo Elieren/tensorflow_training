@@ -14,7 +14,7 @@ import cv2
 from io import BytesIO
 from tensorflow.keras.models import load_model
 
-scale = 80
+scale = 128
 shape = 480
 
 def load_image(file_path):
@@ -26,8 +26,9 @@ def load_image(file_path):
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
     img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8), cv2.IMREAD_GRAYSCALE) # декодирование JPEG в изображение cv2 в оттенках серого
-    img = tensorflow.image.convert_image_dtype(img, tensorflow.float64) # преобразование изображения в формат float64
+    img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     img = numpy.array(img)
+    img = img / 255
     return img
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
@@ -82,6 +83,7 @@ def get_contours(img):
 def get_feature(file_path):
     # Extracting img feature
     img = load_image(file_path)
+    '''
     img_mean = img.mean(axis=1)
     img_min = img.min(axis=1)
     img_max = img.max(axis=1)
@@ -110,28 +112,32 @@ def get_feature(file_path):
     contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
     feature = numpy.concatenate( (img_feature, sobel_edges_feature) )
-    return feature
+    '''
+    return img
 
 #---------------------------------------------------------------------------------#
 
 object_1 = ['Cat','Dog','Mouse','Snake']
 
-loaded_model = load_model('my_model.h5')
+loaded_model = load_model('my_model_pictures.h5')
 
-file_path = "C:\\Users\\kazan\\Desktop\\5.jpg"
+file_path = "C:\\Users\\kazan\\Desktop\\1.jpg"
 feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,shape))
+y = loaded_model.predict(feature.reshape(1,128,128))
 ind = numpy.argmax(y)
-print(object_1[ind], '=> Cat')
+ind -= 4219
+print(object_1[ind], '=> Dog')
 
-file_path = "C:\\Users\\kazan\\Desktop\\6.jpg"
+file_path = "C:\\Users\\kazan\\Desktop\\3.jpg"
 feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,shape))
+y = loaded_model.predict(feature.reshape(1,128,128,1))
 ind = numpy.argmax(y)
-print(object_1[ind], '=> Cat')
+ind -= 4219
+#print(object_1[ind], '=> Cat')
 
-file_path = "C:\\Users\\kazan\\Desktop\\7.jpg"
+file_path = "C:\\Users\\kazan\\Desktop\\4.jpg"
 feature = get_feature(file_path)
-y = loaded_model.predict(feature.reshape(1,shape))
+y = loaded_model.predict(feature.reshape(1,128,128,1))
 ind = numpy.argmax(y)
-print(object_1[ind], '=> Cat')
+ind -= 4219
+print(object_1[ind], '=> Shake')

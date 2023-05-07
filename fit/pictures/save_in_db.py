@@ -14,7 +14,7 @@ from PIL import Image
 import cv2
 from io import BytesIO
 
-scale = 80
+scale = 128
 
 def load_image(file_path):
     global scale
@@ -39,7 +39,7 @@ def get_hog_feature(img):
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
     img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8), cv2.IMREAD_COLOR) # декодирование JPEG в изображение cv2 (цветное)
-    img = tensorflow.image.convert_image_dtype(img, tensorflow.float64) # преобразование изображения в формат float64
+    img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     hog_feature, hog_image = hog(img, orientations=9, pixels_per_cell=(8, 8),
                                 cells_per_block=(2, 2), visualize=True, channel_axis=2)
     hog_image = numpy.array(hog_image)
@@ -54,7 +54,7 @@ def get_sobel_edges(img):
     img.save(buf, format='JPEG') # сохранение изображения в формате JPEG
     file_bytes = buf.getvalue() # получение байтов из буфера
     img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8), cv2.IMREAD_COLOR) # декодирование JPEG в изображение cv2 (цветное)
-    img = tensorflow.image.convert_image_dtype(img, tensorflow.float64) # преобразование изображения в формат float64
+    img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     sobel_edges = sobel(rgb2gray(img))
     sobel_edges = numpy.array(sobel_edges)
     return sobel_edges
@@ -82,10 +82,10 @@ def get_contours(img):
 def get_feature(file_path):
     # Extracting img feature
     img = load_image(file_path)
-    img_mean = img.mean(axis=1)
-    img_min = img.min(axis=1)
-    img_max = img.max(axis=1)
-    img_feature = numpy.concatenate( (img_mean, img_min, img_max) )
+    #img_mean = img.mean(axis=1)
+    #img_min = img.min(axis=1)
+    #img_max = img.max(axis=1)
+    #img_feature = numpy.concatenate( (img_mean, img_min, img_max) )
 
     # Extracting Mel Spectrogram feature
     #hog_feature = get_hog_feature(file_path)
@@ -95,11 +95,11 @@ def get_feature(file_path):
     #hog_feature_feature = numpy.concatenate( (hog_feature_mean, hog_feature_min, hog_feature_max) )
 
     # Extracting sobel_edges vector feature
-    sobel_edges = get_sobel_edges(file_path)
-    sobel_edges_mean = sobel_edges.mean(axis=1)
-    sobel_edges_min = sobel_edges.min(axis=1)
-    sobel_edges_max = sobel_edges.max(axis=1)
-    sobel_edges_feature = numpy.concatenate( (sobel_edges_mean, sobel_edges_min, sobel_edges_max) )
+    #sobel_edges = get_sobel_edges(file_path)
+    #sobel_edges_mean = sobel_edges.mean(axis=1)
+    #sobel_edges_min = sobel_edges.min(axis=1)
+    #sobel_edges_max = sobel_edges.max(axis=1)
+    #sobel_edges_feature = numpy.concatenate( (sobel_edges_mean, sobel_edges_min, sobel_edges_max) )
 
     # Extracting tonnetz feature
     #contours = get_contours(file_path)
@@ -109,8 +109,8 @@ def get_feature(file_path):
     #contours_max = contours_array.max(axis=0)
     #contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
-    feature = numpy.concatenate( (img_feature, sobel_edges_feature) )
-    return feature
+    #feature = numpy.concatenate( (img_feature, sobel_edges_feature) )
+    return img
 
 #---------------------------------------------------------------------------------#
 
@@ -142,15 +142,8 @@ for genre_folder in os.listdir(audio_folder):
 
 #-------------------------------------------------------------------------#
 
-# Предполагая, что `features` - это список списков разной длины
-max_length = max(len(x) for x in features)
-features_array = numpy.zeros((len(features), max_length), dtype=numpy.float64)
-for i, row in enumerate(features):
-    features_array[i,:len(row)] = row
-
-permutations = numpy.random.permutation(len(features))
-features = features_array[permutations]
-
+permutations = numpy.random.permutation(265)
+features = numpy.array(features)[permutations]
 labels = numpy.array(labels)[permutations]
 
 with open('dataset_features.dat', 'wb') as file:

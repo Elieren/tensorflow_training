@@ -60,7 +60,7 @@ def get_feature(file_path):
 
 genres_1 = ['Rock','Phonk','Synthwave','Jazz','EDM','Metal','Nightcore','Dubstep','Score','Frenchcore','Uptempo','Speedcore','Terror','Synth-rock']
 
-loaded_model = load_model('my_model.h5')
+loaded_model = load_model('my_model_music.h5')
 
 file_path = "1.mp4.wav"
 feature = get_feature(file_path)
