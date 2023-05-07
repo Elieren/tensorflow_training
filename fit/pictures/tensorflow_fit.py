@@ -27,9 +27,14 @@ X_test, y_test = X[200:], y[200:]
 model = keras.Sequential([
     keras.layers.Reshape((128, 512, 1), input_shape=(128, 512)),
     keras.layers.Conv2D(32, (3, 3), activation='relu'),
-    keras.layers.MaxPooling2D((2, 2)),
+    keras.layers.MaxPooling2D(2, 2),
+    keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    keras.layers.MaxPooling2D(2, 2),
+    keras.layers.Conv2D(128, (3, 3), activation='relu'),
+    keras.layers.MaxPooling2D(2, 2),
     keras.layers.Flatten(),
-    keras.layers.Dense(64, activation='relu'),
+    keras.layers.Dense(128, activation='relu'),
+    keras.layers.Dense(128, activation='relu'),
     keras.layers.Dense(64, activation='relu'),
     keras.layers.Dropout(0.5),
     keras.layers.Dense(4, activation="softmax")
