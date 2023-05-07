@@ -79,7 +79,7 @@ def get_contours(img):
 
 #----------------------------------------------------------------------------------#
 
-def get_feature(file_path):
+def get_feature(file_path, X, i):
     # Extracting img feature
     img = load_image(file_path)
     #img_mean = img.mean(axis=1)
@@ -88,29 +88,31 @@ def get_feature(file_path):
     #img_feature = numpy.concatenate( (img_mean, img_min, img_max) )
 
     # Extracting Mel Spectrogram feature
-    #hog_feature = get_hog_feature(file_path)
+    hog_feature = get_hog_feature(file_path)
     #hog_feature_mean = hog_feature.mean(axis=1)
     #hog_feature_min = hog_feature.min(axis=1)
     #hog_feature_max = hog_feature.max(axis=1)
     #hog_feature_feature = numpy.concatenate( (hog_feature_mean, hog_feature_min, hog_feature_max) )
 
     # Extracting sobel_edges vector feature
-    #sobel_edges = get_sobel_edges(file_path)
+    sobel_edges = get_sobel_edges(file_path)
     #sobel_edges_mean = sobel_edges.mean(axis=1)
     #sobel_edges_min = sobel_edges.min(axis=1)
     #sobel_edges_max = sobel_edges.max(axis=1)
     #sobel_edges_feature = numpy.concatenate( (sobel_edges_mean, sobel_edges_min, sobel_edges_max) )
 
     # Extracting tonnetz feature
-    #contours = get_contours(file_path)
+    contours = get_contours(file_path)
     #contours_array = numpy.array(contours)
     #contours_mean = contours_array.mean(axis=0)
     #contours_min = contours_array.min(axis=0)
     #contours_max = contours_array.max(axis=0)
     #contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
-    #feature = numpy.concatenate( (img_feature, sobel_edges_feature) )
-    return img
+    features = numpy.concatenate((img, hog_feature, sobel_edges, contours), axis=-1)
+    #features = features.reshape((128, 128, 15))  # изменяем размер массива features
+    X[i,:,:] = features
+    return X
 
 #---------------------------------------------------------------------------------#
 
@@ -120,13 +122,15 @@ features = []
 labels = []
 
 # Путь к папке с аудиофайлами
-audio_folder = 'info\\Pictures'
+audio_folder = 'info/Pictures'
 
 # Список файлов в папке
 audio_files = os.listdir(audio_folder)
 
 # Инициализация списков признаков и меток жанров
+X = numpy.zeros((265, 128, 512))
 
+i = 0
 # Перебор каждого файла в папке
 for genre_folder in os.listdir(audio_folder):
     genre_path = os.path.join(audio_folder, genre_folder)
@@ -136,18 +140,15 @@ for genre_folder in os.listdir(audio_folder):
             if audio_file.endswith('.jpg'):
                 # Добавление признаков и метки жанра в соответствующие списки
                 genre = [substring for substring in object_1 if substring in genre_folder][0]
-                features.append(get_feature(os.path.join(genre_path, audio_file)))
+                get_feature(os.path.join(genre_path, audio_file), X, i)
                 labels.append(object_1.index(genre))
                 print(genre)
+                i += 1
 
 #-------------------------------------------------------------------------#
 
-permutations = numpy.random.permutation(265)
-features = numpy.array(features)[permutations]
-labels = numpy.array(labels)[permutations]
-
 with open('dataset_features.dat', 'wb') as file:
-        pickle.dump(features, file)
+        pickle.dump(X, file)
 
 with open('dataset_labels.dat', 'wb') as file:
     pickle.dump(labels, file)

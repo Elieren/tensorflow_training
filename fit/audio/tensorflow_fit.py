@@ -21,8 +21,11 @@ labels = numpy.array(labels)[permutations]
 labels = keras.utils.to_categorical(labels, num_classes=128)
 labels = keras.utils.to_categorical(labels, num_classes=128)
 
-features_train = features[0:76]
-labels_train = labels[0:76]
+features_train = features[0:46]
+labels_train = labels[0:46]
+
+features_val = features[46:76]
+labels_val = labels[46:76]
 
 features_test = features[76:83]
 labels_test = labels[76:83]
@@ -49,11 +52,12 @@ model.compile(
     # Optimizer
     optimizer='adam',
     # Loss function to minimize
-    loss=keras.losses.SparseCategoricalCrossentropy(),
+    loss='categorical_crossentropy',
     # List of metrics to monitor
-    metrics=[keras.metrics.SparseCategoricalAccuracy()],
+    metrics=["accuracy"],
 )
-model.fit(x=features_train.tolist(),y=labels_train.tolist(),verbose=1, epochs=100)
+
+model.fit(x=features_train,y=labels_train,validation_data=(features_val , labels_val),verbose=1,epochs=100)
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.plot(model.history.history['loss'])
