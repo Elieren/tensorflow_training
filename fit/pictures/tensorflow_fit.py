@@ -48,7 +48,7 @@ model.compile(
 )
 
 # fit model on training set
-model.fit(X_train, y_train, epochs=12, batch_size=32, validation_data=(X_val, y_val))
+model.fit(X_train, y_train, epochs=12, validation_data=(X_val, y_val))
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.plot(model.history.history['loss'])
