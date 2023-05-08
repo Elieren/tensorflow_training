@@ -19,9 +19,9 @@ permutations = np.random.permutation(len(X))
 X = np.array(X)[permutations]
 y = np.array(y)[permutations]
 
-X_train, y_train = X[:150], y[:150]
-X_val, y_val = X[150:200], y[150:200]
-X_test, y_test = X[200:], y[200:]
+X_train, y_train = X[:2500], y[:2500]
+X_val, y_val = X[2500:3000], y[2500:3000]
+X_test, y_test = X[3000:], y[3000:]
 
 # define model
 model = keras.Sequential([
