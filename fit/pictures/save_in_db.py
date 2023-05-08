@@ -14,7 +14,7 @@ from PIL import Image
 import cv2
 from io import BytesIO
 
-scale = 128
+scale = 256
 
 def load_image(file_path):
     global scale
@@ -28,6 +28,7 @@ def load_image(file_path):
     img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     img = numpy.array(img)
     img = img / 255
+    img = img.reshape(256,256,1)
     return img
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
@@ -42,6 +43,7 @@ def get_hog_feature(img):
     img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     hog_feature, hog_image = hog(img, orientations=9, pixels_per_cell=(8, 8),
                                 cells_per_block=(2, 2), visualize=True, channel_axis=2)
+    hog_image = hog_image.reshape(256,256,1)
     hog_image = numpy.array(hog_image)
     return hog_image
 
@@ -56,6 +58,7 @@ def get_sobel_edges(img):
     img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8), cv2.IMREAD_COLOR) # декодирование JPEG в изображение cv2 (цветное)
     img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     sobel_edges = sobel(rgb2gray(img))
+    sobel_edges = sobel_edges.reshape(256,256,1)
     sobel_edges = numpy.array(sobel_edges)
     return sobel_edges
 
@@ -75,6 +78,7 @@ def get_contours(img):
     #create an empty image for contours
     img_contours = numpy.uint8(numpy.zeros((my_photo.shape[0],my_photo.shape[1])))
     cv2.drawContours(img_contours, contours, -1, (255,255,255), 1)
+    img_contours = img_contours.reshape(256,256,1)
     return img_contours
 
 #----------------------------------------------------------------------------------#
@@ -111,7 +115,7 @@ def get_feature(file_path, X, i):
 
     features = numpy.concatenate((img, hog_feature, sobel_edges, contours), axis=-1)
     #features = features.reshape((128, 128, 15))  # изменяем размер массива features
-    X[i,:,:] = features
+    X[i,:,:,:] = features
     return X
 
 #---------------------------------------------------------------------------------#
@@ -128,7 +132,7 @@ audio_folder = 'info/Pictures'
 audio_files = os.listdir(audio_folder)
 
 # Инициализация списков признаков и меток жанров
-X = numpy.zeros((265, 128, 512))
+X = numpy.zeros((265, 256, 256, 4))
 
 i = 0
 # Перебор каждого файла в папке

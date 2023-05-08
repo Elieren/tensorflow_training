@@ -25,8 +25,7 @@ X_test, y_test = X[200:], y[200:]
 
 # define model
 model = keras.Sequential([
-    keras.layers.Reshape((128, 512, 1), input_shape=(128, 512)),
-    keras.layers.Conv2D(32, (3, 3), activation='relu'),
+    keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(256, 256, 4)),
     keras.layers.MaxPooling2D(2, 2),
     keras.layers.Conv2D(64, (3, 3), activation='relu'),
     keras.layers.MaxPooling2D(2, 2),
@@ -48,7 +47,7 @@ model.compile(
 )
 
 # fit model on training set
-model.fit(X_train, y_train, epochs=12, validation_data=(X_val, y_val))
+model.fit(X_train, y_train, epochs=11, batch_size=32, validation_data=(X_val, y_val))
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.plot(model.history.history['loss'])
