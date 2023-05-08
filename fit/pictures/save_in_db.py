@@ -132,7 +132,7 @@ audio_folder = 'info/Pictures'
 audio_files = os.listdir(audio_folder)
 
 # Инициализация списков признаков и меток жанров
-X = numpy.zeros((265, 256, 256, 4))
+X = numpy.zeros((3265, 256, 256, 4))
 
 i = 0
 # Перебор каждого файла в папке
