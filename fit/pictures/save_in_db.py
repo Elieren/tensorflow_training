@@ -107,12 +107,17 @@ def get_feature(file_path, X, i):
 
     # Extracting tonnetz feature
     contours = get_contours(file_path)
+    contours = get_contours(file_path)
     #contours_array = numpy.array(contours)
     #contours_mean = contours_array.mean(axis=0)
     #contours_min = contours_array.min(axis=0)
     #contours_max = contours_array.max(axis=0)
     #contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
+    features = numpy.concatenate((img, hog_feature, sobel_edges, contours), axis=-1)
+    #features = features.reshape((128, 128, 15))  # изменяем размер массива features
+    X[i,:,:,:] = features
+    return X
     features = numpy.concatenate((img, hog_feature, sobel_edges, contours), axis=-1)
     #features = features.reshape((128, 128, 15))  # изменяем размер массива features
     X[i,:,:,:] = features
