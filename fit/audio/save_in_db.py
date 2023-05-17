@@ -65,7 +65,7 @@ features = []
 labels = []
 
 # Путь к папке с аудиофайлами
-audio_folder = 'info\\music'
+audio_folder = './info/music'
 
 # Список файлов в папке
 audio_files = os.listdir(audio_folder)
@@ -83,16 +83,12 @@ for genre_folder in os.listdir(audio_folder):
                 genre = [substring for substring in genres_1 if substring in genre_folder][0]
                 features.append(get_feature(os.path.join(genre_path, audio_file)))
                 labels.append(genres_1.index(genre))
-                print(genre)
+                print(f'🟢 {genre} --- 🎶 {audio_file[:-4]}')
 
 #-------------------------------------------------------------------------#
 
-permutations = numpy.random.permutation(83)
-features = numpy.array(features)[permutations]
-labels = numpy.array(labels)[permutations]
-
-with open('dataset_features.dat', 'wb') as file:
+with open('dataset_db/audio/dataset_features.dat', 'wb') as file:
     pickle.dump(features, file)
 
-with open('dataset_labels.dat', 'wb') as file:
+with open('dataset_db/audio/dataset_labels.dat', 'wb') as file:
     pickle.dump(labels, file)

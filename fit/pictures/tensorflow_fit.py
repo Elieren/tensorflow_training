@@ -1,72 +1,60 @@
-import numpy
+import tensorflow as tf
 from tensorflow import keras
-import tensorflow
+import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 
-shape = 480
-epoch = 10
+# load features and labels
+with open('dataset_db/pictures/dataset_features.dat', 'rb') as file:
+    X = pickle.load(file)
 
-features = []
-labels = []
+with open('dataset_db/pictures/dataset_labels.dat', 'rb') as file:
+    y = pickle.load(file)
 
-with open('dataset_features.dat', 'rb') as file:
-	features = pickle.load(file)
+# convert labels to categorical
+y = keras.utils.to_categorical(y, num_classes=4)
 
-with open('dataset_labels.dat', 'rb') as file:
-	labels = pickle.load(file)
+# shuffle and split data into train/validation/test sets
+permutations = np.random.permutation(len(X))
+X = np.array(X)[permutations]
+y = np.array(y)[permutations]
 
-permutations = numpy.random.permutation(265)
-features = numpy.array(features)[permutations]
-labels = numpy.array(labels)[permutations]
-labels = keras.utils.to_categorical(labels, num_classes=128)
-labels = keras.utils.to_categorical(labels, num_classes=128)
+X_train, y_train = X[:2500], y[:2500]
+X_val, y_val = X[2500:3000], y[2500:3000]
+X_test, y_test = X[3000:], y[3000:]
 
-features_train = features[0:126]
-labels_train = labels[0:126]
-
-features_val = features[126:250]
-labels_val = labels[126:250]
-
-features_test = features[252:265]
-labels_test = labels[252:265]
-
-features_train = numpy.array(features_train)
-labels_train = numpy.array(labels_train)
-
-features_train = tensorflow.convert_to_tensor(features_train, dtype=tensorflow.float32)
-labels_train = tensorflow.convert_to_tensor(labels_train, dtype=tensorflow.int32)
-
-#tensorflow.device('/device:GPU:0')
-
-
-model = keras.models.Sequential([
-    keras.layers.Dense(256, activation="relu", name="dense_1",input_shape=(128, 128, 1)),
-    keras.layers.Dense(128, activation="relu", name="dense_2"),
-    keras.layers.Dense(128, activation="relu", name="dense_3"),
+# define model
+model = keras.Sequential([
+    keras.layers.Conv2D(32, (5, 5), activation='relu', input_shape=(256, 256, 4)),
+    keras.layers.MaxPooling2D(2, 2),
+    keras.layers.Conv2D(64, (5, 5), activation='relu'),
+    keras.layers.MaxPooling2D(2, 2),
+    keras.layers.Conv2D(128, (3, 3), activation='relu'),
+    keras.layers.MaxPooling2D(2, 2),
+    keras.layers.Flatten(),
+    keras.layers.Dense(64, activation='relu'),
+    keras.layers.Dense(128, activation='relu'),
+    keras.layers.Dense(128, activation='relu'),
     keras.layers.Dropout(0.5),
-    keras.layers.Dense(4, activation="softmax", name="predictions")
+    keras.layers.Dense(4, activation="softmax")
 ])
 
+# compile model
 model.compile(
-    # Optimizer
     optimizer='adam',
-    # Loss function to minimize
-    loss=keras.losses.SparseCategoricalCrossentropy(),
-    # List of metrics to monitor
-    metrics=["accuracy"],
+    loss=tf.keras.losses.CategoricalCrossentropy(),
+    metrics=['accuracy']
 )
 
-
-
-model.fit(x=features_train,y=labels_train,verbose=1,validation_data=(features_val , labels_val),epochs=epoch)
+# fit model on training set
+model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_val, y_val))
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.plot(model.history.history['loss'])
-plt.show()
 
-score = model.evaluate(x=features_test,y=labels_test, verbose=0)
+# evaluate model on test set
+score = model.evaluate(X_test, y_test)
 print(score)
 print('Accuracy : ' + str(score[1]*100) + '%')
 
-model.save('my_model_pictures.h5')
+model.save('model/pictures/my_model_pictures.h5')

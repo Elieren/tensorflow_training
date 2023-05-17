@@ -14,7 +14,7 @@ from PIL import Image
 import cv2
 from io import BytesIO
 
-scale = 128
+scale = 256
 
 def load_image(file_path):
     global scale
@@ -28,6 +28,7 @@ def load_image(file_path):
     img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     img = numpy.array(img)
     img = img / 255
+    img = img.reshape(scale,scale,1)
     return img
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
@@ -42,6 +43,7 @@ def get_hog_feature(img):
     img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     hog_feature, hog_image = hog(img, orientations=9, pixels_per_cell=(8, 8),
                                 cells_per_block=(2, 2), visualize=True, channel_axis=2)
+    hog_image = hog_image.reshape(scale,scale,1)
     hog_image = numpy.array(hog_image)
     return hog_image
 
@@ -56,6 +58,7 @@ def get_sobel_edges(img):
     img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8), cv2.IMREAD_COLOR) # декодирование JPEG в изображение cv2 (цветное)
     img = tensorflow.image.convert_image_dtype(img, tensorflow.float32) # преобразование изображения в формат float64
     sobel_edges = sobel(rgb2gray(img))
+    sobel_edges = sobel_edges.reshape(scale,scale,1)
     sobel_edges = numpy.array(sobel_edges)
     return sobel_edges
 
@@ -75,11 +78,12 @@ def get_contours(img):
     #create an empty image for contours
     img_contours = numpy.uint8(numpy.zeros((my_photo.shape[0],my_photo.shape[1])))
     cv2.drawContours(img_contours, contours, -1, (255,255,255), 1)
+    img_contours = img_contours.reshape(scale,scale,1)
     return img_contours
 
 #----------------------------------------------------------------------------------#
 
-def get_feature(file_path):
+def get_feature(file_path, X, i):
     # Extracting img feature
     img = load_image(file_path)
     #img_mean = img.mean(axis=1)
@@ -88,45 +92,49 @@ def get_feature(file_path):
     #img_feature = numpy.concatenate( (img_mean, img_min, img_max) )
 
     # Extracting Mel Spectrogram feature
-    #hog_feature = get_hog_feature(file_path)
+    hog_feature = get_hog_feature(file_path)
     #hog_feature_mean = hog_feature.mean(axis=1)
     #hog_feature_min = hog_feature.min(axis=1)
     #hog_feature_max = hog_feature.max(axis=1)
     #hog_feature_feature = numpy.concatenate( (hog_feature_mean, hog_feature_min, hog_feature_max) )
 
     # Extracting sobel_edges vector feature
-    #sobel_edges = get_sobel_edges(file_path)
+    sobel_edges = get_sobel_edges(file_path)
     #sobel_edges_mean = sobel_edges.mean(axis=1)
     #sobel_edges_min = sobel_edges.min(axis=1)
     #sobel_edges_max = sobel_edges.max(axis=1)
     #sobel_edges_feature = numpy.concatenate( (sobel_edges_mean, sobel_edges_min, sobel_edges_max) )
 
     # Extracting tonnetz feature
-    #contours = get_contours(file_path)
+    contours = get_contours(file_path)
     #contours_array = numpy.array(contours)
     #contours_mean = contours_array.mean(axis=0)
     #contours_min = contours_array.min(axis=0)
     #contours_max = contours_array.max(axis=0)
     #contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
-    #feature = numpy.concatenate( (img_feature, sobel_edges_feature) )
-    return img
+    features = numpy.concatenate((img, hog_feature, sobel_edges, contours), axis=-1)
+    #features = features.reshape((128, 128, 15))  # изменяем размер массива features
+    X[i,:,:,:] = features
+    return X
 
 #---------------------------------------------------------------------------------#
 
-object_1 = ['Cat','Dog','Mouse','Snake']
+object_1 = ['Cat','Dog']
 print(len(object_1))
 features = []
 labels = []
 
 # Путь к папке с аудиофайлами
-audio_folder = 'info\\Pictures'
+audio_folder = 'info/Pictures'
 
 # Список файлов в папке
 audio_files = os.listdir(audio_folder)
 
 # Инициализация списков признаков и меток жанров
+X = numpy.zeros((2141, scale, scale, 4))
 
+i = 0
 # Перебор каждого файла в папке
 for genre_folder in os.listdir(audio_folder):
     genre_path = os.path.join(audio_folder, genre_folder)
@@ -136,18 +144,15 @@ for genre_folder in os.listdir(audio_folder):
             if audio_file.endswith('.jpg'):
                 # Добавление признаков и метки жанра в соответствующие списки
                 genre = [substring for substring in object_1 if substring in genre_folder][0]
-                features.append(get_feature(os.path.join(genre_path, audio_file)))
+                get_feature(os.path.join(genre_path, audio_file), X, i)
                 labels.append(object_1.index(genre))
-                print(genre)
+                print(genre, i)
+                i += 1
 
 #-------------------------------------------------------------------------#
 
-permutations = numpy.random.permutation(265)
-features = numpy.array(features)[permutations]
-labels = numpy.array(labels)[permutations]
+with open('dataset_db/pictures/dataset_features.dat', 'wb') as file:
+        pickle.dump(X, file)
 
-with open('dataset_features.dat', 'wb') as file:
-        pickle.dump(features, file)
-
-with open('dataset_labels.dat', 'wb') as file:
+with open('dataset_db/pictures/dataset_labels.dat', 'wb') as file:
     pickle.dump(labels, file)
