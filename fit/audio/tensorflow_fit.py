@@ -13,7 +13,7 @@ with open('dataset_db/audio/dataset_features.dat', 'rb') as file:
 with open('dataset_db/audio/dataset_labels.dat', 'rb') as file:
 	labels = pickle.load(file)
 
-permutations = numpy.random.permutation(83)
+permutations = numpy.random.permutation(len(features))
 features = numpy.array(features)[permutations]
 labels = numpy.array(labels)[permutations]
 #labels = keras.utils.to_categorical(labels, num_classes=128)
