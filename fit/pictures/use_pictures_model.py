@@ -114,7 +114,7 @@ def get_feature(file_path, X, i):
     #contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
     features = numpy.concatenate((img, hog_feature, sobel_edges, contours), axis=-1)
-    #features = features.reshape((128, 128, 15))  # изменяем размер массива features
+    #features = features.reshape((scale, sclale, 4))  # изменяем размер массива features
     X[i,:,:,:] = features
     return X
 
