@@ -125,7 +125,6 @@ object_1 = ['Cat','Dog']
 loaded_model = load_model('model/pictures/my_model_pictures.h5')
 
 file_path = "1.jpg"
-file_path = "1.jpg"
 X = numpy.zeros((1, scale, scale, 4))
 feature = get_feature(file_path)
 y = loaded_model.predict(feature)
