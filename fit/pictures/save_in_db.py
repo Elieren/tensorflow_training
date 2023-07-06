@@ -15,6 +15,7 @@ import cv2
 from io import BytesIO
 
 scale = 256
+quantity_image = 1 # 3141
 
 def load_image(file_path):
     global scale
@@ -118,10 +119,6 @@ def get_feature(file_path, X, i):
     #features = features.reshape((128, 128, 15))  # изменяем размер массива features
     X[i,:,:,:] = features
     return X
-    features = numpy.concatenate((img, hog_feature, sobel_edges, contours), axis=-1)
-    #features = features.reshape((128, 128, 15))  # изменяем размер массива features
-    X[i,:,:,:] = features
-    return X
 
 #---------------------------------------------------------------------------------#
 
@@ -137,7 +134,7 @@ audio_folder = 'info/Pictures'
 audio_files = os.listdir(audio_folder)
 
 # Инициализация списков признаков и меток жанров
-X = numpy.zeros((2141, scale, scale, 4))
+X = numpy.zeros((quantity_image, scale, scale, 4))
 
 i = 0
 # Перебор каждого файла в папке

@@ -3,6 +3,7 @@ import numpy
 from tensorflow import keras
 import librosa
 from matplotlib import pyplot
+from tensorflow.keras.models import load_model
 
 def get_mfcc(wav_file_path):
     y, sr = librosa.load(wav_file_path, offset=0, duration=30)
@@ -60,34 +61,10 @@ def get_feature(file_path):
 
 genres_1 = ['Rock','Phonk','Synthwave','Jazz','EDM','Metal','Nightcore','Dubstep','Score','Frenchcore','Uptempo','Speedcore','Terror','Synth-rock']
 
-loaded_model = load_model('my_model_music.h5')
+model = load_model('model/audio/my_model_music.h5')
 
-file_path = "1.mp4.wav"
+file_path = "info/music/Phonk/MUKBANG-Haarper.wav"
 feature = get_feature(file_path)
 y = model.predict(feature.reshape(1,498))
 ind = numpy.argmax(y)
 print(genres_1[ind], '=> Phonk (MUKBANG)')
-
-file_path = "2.wav"
-feature = get_feature(file_path)
-y = model.predict(feature.reshape(1,498))
-ind = numpy.argmax(y)
-print(genres_1[ind], '=> Synthwavw (El Tigro)')
-
-file_path = "3.mp4.wav"
-feature = get_feature(file_path)
-y = model.predict(feature.reshape(1,498))
-ind = numpy.argmax(y)
-print(genres_1[ind], '=> EDM (Nana)')
-
-file_path = "1.wav"
-feature = get_feature(file_path)
-y = model.predict(feature.reshape(1,498))
-ind = numpy.argmax(y)
-print(genres_1[ind], '=> ? (Been Good To Know Ya)')
-
-file_path = "2.mp4.wav"
-feature = get_feature(file_path)
-y = model.predict(feature.reshape(1,498))
-ind = numpy.argmax(y)
-print(genres_1[ind], '=> EDM (Zenith)')
