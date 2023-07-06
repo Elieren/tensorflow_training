@@ -114,7 +114,7 @@ def get_feature(file_path, X, i):
     #contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
     features = numpy.concatenate((img, hog_feature, sobel_edges, contours), axis=-1)
-    #features = features.reshape((128, 128, 15))  # изменяем размер массива features
+    #features = features.reshape((scale, sclale, 4))  # изменяем размер массива features
     X[i,:,:,:] = features
     return X
 
@@ -125,8 +125,11 @@ object_1 = ['Cat','Dog','Mouse','Snake']
 loaded_model = load_model('model/pictures/my_model_pictures.h5')
 
 file_path = "1.jpg"
+file_path = "1.jpg"
 X = numpy.zeros((1, scale, scale, 4))
 feature = get_feature(file_path)
 y = loaded_model.predict(feature)
 ind = numpy.argmax(y)
+print(object_1[ind], '=> Dog')
+
 print(object_1[ind], '=> ?')

@@ -51,6 +51,8 @@ model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_val, y_
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.plot(model.history.history['loss'])
+plt.plot(model.history.history['val_loss'])
+plt.show()
 
 # evaluate model on test set
 score = model.evaluate(X_test, y_test)
