@@ -120,7 +120,7 @@ def get_feature(file_path, X, i):
 
 #---------------------------------------------------------------------------------#
 
-object_1 = ['Cat','Dog','Mouse','Snake']
+object_1 = ['Cat','Dog']
 
 loaded_model = load_model('model/pictures/my_model_pictures.h5')
 
