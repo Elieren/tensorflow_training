@@ -122,7 +122,7 @@ def get_feature(file_path, X, i):
 
 object_1 = ['Cat','Dog','Mouse','Snake']
 
-loaded_model = load_model('./model/pictures/my_model_pictures.h5')
+loaded_model = load_model('model/pictures/my_model_pictures.h5')
 
 file_path = "1.jpg"
 X = numpy.zeros((1, scale, scale, 4))
