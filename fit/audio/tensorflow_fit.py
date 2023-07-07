@@ -3,6 +3,7 @@ from tensorflow import keras
 import tensorflow
 import pickle
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 features = []
 labels = []
@@ -19,14 +20,12 @@ labels = numpy.array(labels)[permutations]
 #labels = keras.utils.to_categorical(labels, num_classes=128)
 #labels = keras.utils.to_categorical(labels, num_classes=128)
 
-features_train = features[:65]
-labels_train = labels[:65]
 
-features_val = features[65:75]
-labels_val = labels[65:75]
+features_train, X_other, labels_train, y_other = train_test_split(features, labels, test_size=0.2, random_state=42)
 
-features_test = features[75:]
-labels_test = labels[75:]
+# Разделение остатка на test и val
+features_test, features_val, labels_test, labels_val = train_test_split(X_other, y_other, test_size=0.5, random_state=42)
+
 
 features_train = numpy.array(features_train)
 labels_train = numpy.array(labels_train)

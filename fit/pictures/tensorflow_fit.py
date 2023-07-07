@@ -3,6 +3,7 @@ from tensorflow import keras
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 # load features and labels
 with open('dataset_db/pictures/dataset_features.dat', 'rb') as file:
@@ -12,16 +13,18 @@ with open('dataset_db/pictures/dataset_labels.dat', 'rb') as file:
     y = pickle.load(file)
 
 # convert labels to categorical
-y = keras.utils.to_categorical(y, num_classes=4)
+y = keras.utils.to_categorical(y, num_classes=2)
 
 # shuffle and split data into train/validation/test sets
 permutations = np.random.permutation(len(X))
 X = np.array(X)[permutations]
 y = np.array(y)[permutations]
 
-X_train, y_train = X[:2500], y[:2500]
-X_val, y_val = X[2500:3000], y[2500:3000]
-X_test, y_test = X[3000:], y[3000:]
+
+X_train, X_other, y_train, y_other = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Разделение остатка на test и val
+X_test, X_val, y_test, y_val = train_test_split(X_other, y_other, test_size=0.5, random_state=42)
 
 # define model
 model = keras.Sequential([
@@ -36,7 +39,7 @@ model = keras.Sequential([
     keras.layers.Dense(128, activation='relu'),
     keras.layers.Dense(128, activation='relu'),
     keras.layers.Dropout(0.5),
-    keras.layers.Dense(4, activation="softmax")
+    keras.layers.Dense(2, activation="softmax")
 ])
 
 # compile model
