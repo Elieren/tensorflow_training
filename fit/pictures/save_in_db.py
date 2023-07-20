@@ -15,7 +15,7 @@ import cv2
 from io import BytesIO
 
 scale = 256
-quantity_image = 1 # 3141
+quantity_image = 2000 # 3141
 
 def load_image(file_path):
     global scale
@@ -108,14 +108,13 @@ def get_feature(file_path, X, i):
 
     # Extracting tonnetz feature
     contours = get_contours(file_path)
-    contours = get_contours(file_path)
     #contours_array = numpy.array(contours)
     #contours_mean = contours_array.mean(axis=0)
     #contours_min = contours_array.min(axis=0)
     #contours_max = contours_array.max(axis=0)
     #contours_feature = numpy.concatenate( (contours_mean, contours_min, contours_max) ) 
 
-    features = numpy.concatenate((img, hog_feature, sobel_edges, contours), axis=-1)
+    features = numpy.concatenate((img, hog_feature, sobel_edges), axis=-1)
     #features = features.reshape((scale, scale, 4))  # изменяем размер массива features
     X[i,:,:,:] = features
     return X
@@ -134,7 +133,7 @@ audio_folder = 'info/Pictures'
 audio_files = os.listdir(audio_folder)
 
 # Инициализация списков признаков и меток жанров
-X = numpy.zeros((quantity_image, scale, scale, 4))
+X = numpy.zeros((quantity_image, scale, scale, 3))
 
 i = 0
 # Перебор каждого файла в папке
