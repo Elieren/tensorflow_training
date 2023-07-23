@@ -37,7 +37,7 @@ X_test, X_val, y_test, y_val = train_test_split(X_other, y_other, test_size=0.5,
 
 # Создание словаря
 tokenizer = Tokenizer()
-tokenizer.fit_on_texts(X_train)
+tokenizer.fit_on_texts(text)
 word_index = tokenizer.word_index
 vocab_size = len(word_index) + 1  # размер словаря
 
