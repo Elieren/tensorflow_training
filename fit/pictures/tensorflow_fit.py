@@ -21,14 +21,19 @@ X = np.array(X)[permutations]
 y = np.array(y)[permutations]
 
 
-X_train, X_other, y_train, y_other = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_other, y_train, y_other = train_test_split(
+    X, y, test_size=0.2, random_state=42
+    )
 
 # Разделение остатка на test и val
-X_test, X_val, y_test, y_val = train_test_split(X_other, y_other, test_size=0.5, random_state=42)
+X_test, X_val, y_test, y_val = train_test_split(
+    X_other, y_other, test_size=0.5, random_state=42
+    )
 
 # define model
 model = keras.Sequential([
-    keras.layers.Conv2D(32, (5, 5), activation='relu', input_shape=(256, 256, 4)),
+    keras.layers.Conv2D(32, (5, 5), activation='relu',
+                        input_shape=(256, 256, 4)),
     keras.layers.MaxPooling2D(2, 2),
     keras.layers.Conv2D(64, (5, 5), activation='relu'),
     keras.layers.MaxPooling2D(2, 2),
@@ -50,7 +55,8 @@ model.compile(
 )
 
 # fit model on training set
-model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_val, y_val))
+model.fit(X_train, y_train, epochs=10, batch_size=32,
+          validation_data=(X_val, y_val))
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.plot(model.history.history['loss'])

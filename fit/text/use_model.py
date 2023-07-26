@@ -17,7 +17,8 @@ tokenizer = Tokenizer()
 tokenizer.word_index = word_index
 new_sequences = tokenizer.texts_to_sequences(new_texts)
 max_length = 120  # Размер последовательности, используемый при обучении
-new_padded_sequences = pad_sequences(new_sequences, maxlen=max_length, padding='pre')
+new_padded_sequences = pad_sequences(new_sequences, maxlen=max_length,
+                                     padding='pre')
 
 # Классификация новых текстов
 predictions = model.predict(new_padded_sequences)

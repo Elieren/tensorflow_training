@@ -1,9 +1,9 @@
 import sqlite3
 import csv
-import random
 
 
 value = 10000 + 1
+
 
 def a(data):
     for i in data:
@@ -13,7 +13,8 @@ def a(data):
         while True:
             text = input(': ')
             if ((int(text) == 0) or (int(text) == 1)):
-                cursor.execute("INSERT INTO text_ai (text, class) VALUES (?, ?)",(i, text))
+                cursor.execute("INSERT INTO text_ai (text, class) VALUES \
+                    (?, ?)", (i, text))
                 connect.commit()
                 break
             else:
@@ -21,6 +22,7 @@ def a(data):
                 print(f'test: {data_1.index(i)}/{value - 1}\n')
 
         print('-' * 100)
+
 
 data = []
 with open('./info/lenta-ru-news.csv', 'r', encoding='utf-8') as file:

@@ -1,6 +1,6 @@
 import sqlite3
 
-connect = sqlite3.connect('./dataset_db/text/base.db') #Database creation
+connect = sqlite3.connect('./dataset_db/text/base.db')  # Database creation
 cursor = connect.cursor()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS text_ai(
