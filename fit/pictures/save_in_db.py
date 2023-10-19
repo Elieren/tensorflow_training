@@ -9,8 +9,8 @@ from PIL import Image
 import cv2
 from io import BytesIO
 
-scale = 256
-quantity_image = 2000  # 3141
+scale = 128
+quantity_image = 3141  # 3141
 
 
 def load_image(file_path):
@@ -102,37 +102,12 @@ def get_contours(img):
 def get_feature(file_path, X, i):
     # Extracting img feature
     img = load_image(file_path)
-    # img_mean = img.mean(axis=1)
-    # img_min = img.min(axis=1)
-    # img_max = img.max(axis=1)
-    # img_feature = numpy.concatenate((img_mean, img_min, img_max))
 
     # Extracting Mel Spectrogram feature
     hog_feature = get_hog_feature(file_path)
-    # hog_feature_mean = hog_feature.mean(axis=1)
-    # hog_feature_min = hog_feature.min(axis=1)
-    # hog_feature_max = hog_feature.max(axis=1)
-    # hog_feature_feature = numpy.concatenate((hog_feature_mean,
-    #                                          hog_feature_min,
-    #                                          hog_feature_max))
 
     # Extracting sobel_edges vector feature
     sobel_edges = get_sobel_edges(file_path)
-    # sobel_edges_mean = sobel_edges.mean(axis=1)
-    # sobel_edges_min = sobel_edges.min(axis=1)
-    # sobel_edges_max = sobel_edges.max(axis=1)
-    # sobel_edges_feature = numpy.concatenate((sobel_edges_mean,
-    #                                          sobel_edges_min,
-    #                                          sobel_edges_max))
-
-    # Extracting tonnetz feature
-    # contours = get_contours(file_path)
-    # contours_array = numpy.array(contours)
-    # contours_mean = contours_array.mean(axis=0)
-    # contours_min = contours_array.min(axis=0)
-    # contours_max = contours_array.max(axis=0)
-    # contours_feature = numpy.concatenate((contours_mean,
-    #                                       contours_min, contours_max))
 
     features = numpy.concatenate((img, hog_feature, sobel_edges), axis=-1)
     X[i, :, :, :] = features

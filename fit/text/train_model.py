@@ -86,4 +86,4 @@ print(score)
 print('Accuracy : ' + str(score[1]*100) + '%')
 
 # Сохранение модели
-model.save('./model/text/my_model.h5')
+model.save('./model/text/my_model.keras')

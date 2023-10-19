@@ -86,4 +86,4 @@ score = model.evaluate(x=features_test.tolist(),
 print(score)
 print('Accuracy : ' + str(score[1]*100) + '%')
 
-model.save('model/audio/my_model_music.h5')
+model.save('model/audio/my_model_music.keras')

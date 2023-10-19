@@ -1,5 +1,7 @@
 info/Pictures
-fit_test
-model_llama
-text_generating
+experemental
 venv
+*.dat
+*.keras
+fit/photo-recommendation
+fit/pictures/test_pictures

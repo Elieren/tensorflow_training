@@ -69,7 +69,7 @@ genres_1 = ['Rock', 'Phonk', 'Synthwave', 'Jazz', 'EDM', 'Metal', 'Nightcore',
             'Dubstep', 'Score', 'Frenchcore', 'Uptempo', 'Speedcore', 'Terror',
             'Synth-rock']
 
-model = load_model('model/audio/my_model_music.h5')
+model = load_model('model/audio/my_model_music.keras')
 
 file_path = "info/music/Phonk/MUKBANG-Haarper.wav"
 feature = get_feature(file_path)

@@ -4,7 +4,7 @@ from tensorflow.keras.models import load_model
 import pickle
 
 # Загрузка предобученной модели
-model = load_model('./model/text/my_model.h5')
+model = load_model('./model/text/my_model.keras')
 
 with open('./dataset_db/text/word_index.pickle', 'rb') as handle:
     word_index = pickle.load(handle)
