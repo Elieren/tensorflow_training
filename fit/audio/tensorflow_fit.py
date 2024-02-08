@@ -68,7 +68,8 @@ model.compile(
     metrics=['accuracy'],
 )
 model.fit(features_train, labels_train,
-          validation_data=(features_val, labels_val), verbose=1, epochs=200)
+          validation_data=(features_val, labels_val), verbose=1,
+          epochs=100, batch_size=32)
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.plot(model.history.history['loss'])

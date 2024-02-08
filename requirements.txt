@@ -12,7 +12,7 @@ decorator==5.1.1
 flatbuffers==23.5.26
 fonttools>=4.43.0
 gast==0.4.0
-google-auth==2.22.0
+google-auth==2.27.0
 google-auth-oauthlib==1.0.0
 google-pasta==0.2.0
 grpcio==1.56.2
@@ -67,7 +67,7 @@ termcolor==2.3.0
 threadpoolctl==3.2.0
 tifffile==2023.7.18
 typing-extensions==4.5.0
-urllib3==2.0.4
+urllib3==2.2.0
 Werkzeug==2.3.6
 wrapt==1.15.0
 zipp==3.16.2

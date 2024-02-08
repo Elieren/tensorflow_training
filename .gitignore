@@ -1,6 +1,7 @@
 info/Pictures
+info/music
 experemental
-venv
+.venv
 *.dat
 *.keras
 fit/photo-recommendation
