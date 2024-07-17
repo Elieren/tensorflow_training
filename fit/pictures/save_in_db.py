@@ -9,13 +9,33 @@ from PIL import Image
 import cv2
 from io import BytesIO
 
+import boto3
+from botocore.client import Config
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+# ------------------------AWS-S3-Pictures-------------------------#
+
+endpoint_url = os.environ['URL_HOST']
+aws_access_key_id = os.environ['ACCESS_KEY']
+aws_secret_access_key = os.environ['SECRET_ACCESS_KEY']
+bucket = os.environ['BUCKET']
+
+#  ---------------------------------------------------------------#
+
+s3 = boto3.client('s3',
+                  endpoint_url=endpoint_url,
+                  aws_access_key_id=aws_access_key_id,
+                  aws_secret_access_key=aws_secret_access_key,
+                  config=Config(signature_version='s3v4'))
+
 scale = 128
-quantity_image = 3141  # 3141
 
 
-def load_image(file_path):
+def load_image(img):
     global scale
-    img = Image.open(file_path)
     img = img.convert('L')  # конвертация в оттенки серого
     img = img.resize((scale, scale))
     buf = BytesIO()  # создание байтового буфера
@@ -35,7 +55,6 @@ def load_image(file_path):
 # Функция для вычисления гистограммы направленных градиентов (HOG)
 def get_hog_feature(img):
     global scale
-    img = Image.open(img)
     img = img.resize((scale, scale))
     buf = BytesIO()  # создание байтового буфера
     img.save(buf, format='JPEG')  # сохранение изображения в формате JPEG
@@ -57,7 +76,6 @@ def get_hog_feature(img):
 # Функция для вычисления границ объектов с помощью оператора Собеля
 def get_sobel_edges(img):
     global scale
-    img = Image.open(img)
     img = img.resize((scale, scale))
     buf = BytesIO()  # создание байтового буфера
     img.save(buf, format='JPEG')  # сохранение изображения в формате JPEG
@@ -76,9 +94,8 @@ def get_sobel_edges(img):
 # Функция для вычисления контуров объектов
 def get_contours(img):
     global scale
-    my_photo = cv2.imread(img)
-    my_photo = cv2.resize(my_photo, (scale, scale))
-    filterd_image = cv2.medianBlur(my_photo, 7)
+    img = cv2.resize(img, (scale, scale))
+    filterd_image = cv2.medianBlur(img, 7)
     img_grey = cv2.cvtColor(filterd_image, cv2.COLOR_BGR2GRAY)
     # set a thresh
     thresh = 100
@@ -90,7 +107,7 @@ def get_contours(img):
                                            cv2.CHAIN_APPROX_SIMPLE)
     # create an empty image for contours
     img_contours = numpy.uint8(numpy.zeros(
-        (my_photo.shape[0], my_photo.shape[1]))
+        (img.shape[0], img.shape[1]))
         )
     cv2.drawContours(img_contours, contours, -1, (255, 255, 255), 1)
     img_contours = img_contours.reshape(scale, scale, 1)
@@ -99,53 +116,55 @@ def get_contours(img):
 # ----------------------------------------------------------------------------------#
 
 
-def get_feature(file_path, X, i):
+def get_feature(key, X, i):
+
+    image_object = s3.get_object(Bucket=bucket, Key=key)
+    image_data = image_object['Body'].read()
+
+    img = Image.open(BytesIO(image_data))
+
     # Extracting img feature
-    img = load_image(file_path)
+    img_gray = load_image(img)
 
     # Extracting Mel Spectrogram feature
-    hog_feature = get_hog_feature(file_path)
+    hog_feature = get_hog_feature(img)
 
     # Extracting sobel_edges vector feature
-    sobel_edges = get_sobel_edges(file_path)
+    sobel_edges = get_sobel_edges(img)
 
-    features = numpy.concatenate((img, hog_feature, sobel_edges), axis=-1)
+    features = numpy.concatenate((img_gray, hog_feature, sobel_edges), axis=-1)
     X[i, :, :, :] = features
-    return X
+    # return X
 
 # ---------------------------------------------------------------------------------#
 
 
-object_1 = ['Cat', 'Dog']
-print(len(object_1))
-features = []
+files = []
+objects = []
+
 labels = []
 
-# Путь к папке с аудиофайлами
-audio_folder = 'info/Pictures'
 
-# Список файлов в папке
-audio_files = os.listdir(audio_folder)
+paginator = s3.get_paginator('list_objects')
 
-# Инициализация списков признаков и меток жанров
+for page in paginator.paginate(Bucket=bucket):
+    # print(page)
+    _ = [files.append(s['Key']) for s in page['Contents']]
+
+
+quantity_image = len(files)
+
 X = numpy.zeros((quantity_image, scale, scale, 3))
 
-i = 0
-# Перебор каждого файла в папке
-for genre_folder in os.listdir(audio_folder):
-    genre_path = os.path.join(audio_folder, genre_folder)
-    if os.path.isdir(genre_path) and any(substring in genre_folder
-                                         for substring in object_1):
-        # Перебор каждого WAV файла в папке-жанре
-        for audio_file in os.listdir(genre_path):
-            if audio_file.endswith('.jpg'):
-                # Добавление признаков и метки жанра в соответствующие списки
-                genre = [substring for substring in object_1
-                         if substring in genre_folder][0]
-                get_feature(os.path.join(genre_path, audio_file), X, i)
-                labels.append(object_1.index(genre))
-                print(genre, i)
-                i += 1
+_ = [objects.append(x.split('/')[0])
+     for x in files if x.split('/')[0] not in objects]
+
+for i, x in enumerate(files):
+    genre = x.split('/')[0]
+    get_feature(x, X, i)
+    labels.append(objects.index(genre))
+    print(genre, i)
+
 
 # -------------------------------------------------------------------------#
 
