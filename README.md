@@ -16,7 +16,7 @@ The goal of this project is to compile all the essential cheat sheets for creati
 ## Code changes:
 - [ ] Transition from local dataset storage to s3 server
 > - [x] Image classification
-> - [ ] Music genre classification
+> - [x] Music genre classification
 - [ ] Code optimization and debugging
 
 ## Example folder location:
