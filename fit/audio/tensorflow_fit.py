@@ -50,12 +50,16 @@ labels_val = tensorflow.convert_to_tensor(labels_val, dtype=tensorflow.int32)
 
 
 model = keras.models.Sequential([
-    keras.layers.Dense(350, activation="relu", name="dense_1",
+    keras.layers.Dense(512, activation="relu", name="dense_1",
                        input_shape=(498,)),
-    keras.layers.Dense(128, activation="relu", name="dense_2"),
+    keras.layers.Dense(256, activation="relu", name="dense_2"),
+    keras.layers.Dropout(0.2),
+    keras.layers.BatchNormalization(),
     keras.layers.Dense(256, activation="relu", name="dense_3"),
-    keras.layers.Dense(128, activation="relu", name="dense_4"),
-    keras.layers.Dropout(0.5),
+    keras.layers.BatchNormalization(),
+    keras.layers.Dense(256, activation="relu", name="dense_4"),
+    keras.layers.Dropout(0.3),
+    keras.layers.BatchNormalization(),
     keras.layers.Dense(14, activation="softmax", name="predictions")
 ])
 
@@ -67,6 +71,9 @@ model.compile(
     # List of metrics to monitor
     metrics=['accuracy'],
 )
+
+model.summary()
+
 model.fit(features_train, labels_train,
           validation_data=(features_val, labels_val), verbose=1,
           epochs=100, batch_size=32)
@@ -87,4 +94,4 @@ score = model.evaluate(x=features_test.tolist(),
 print(score)
 print('Accuracy : ' + str(score[1]*100) + '%')
 
-model.save('model/audio/my_model_music.keras')
+model.save_weights('model/audio/model_weights.h5')

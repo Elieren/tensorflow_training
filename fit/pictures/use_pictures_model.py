@@ -6,39 +6,25 @@ from skimage.feature._hog import hog
 from PIL import Image
 import cv2
 from io import BytesIO
-from tensorflow.keras.models import load_model
+import tensorflow as tf
 
 scale = 128
 
 
-def load_image(file_path):
-    global scale
-    img = Image.open(file_path)
-    img = img.convert('L')  # конвертация в оттенки серого
-    img = img.resize((scale, scale))
-    buf = BytesIO()  # создание байтового буфера
-    img.save(buf, format='JPEG')  # сохранение изображения в формате JPEG
-    file_bytes = buf.getvalue()  # получение байтов из буфера
-    # декодирование JPEG в изображение cv2 в оттенках серого
+def load_image(file_bytes):
     img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8),
-                       cv2.IMREAD_GRAYSCALE)
+                       cv2.IMREAD_COLOR)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     # преобразование изображения в формат float64
     img = tensorflow.image.convert_image_dtype(img, tensorflow.float32)
     img = numpy.array(img)
-    img = img / 255
-    img = img.reshape(scale, scale, 1)
+    # plt.imshow(img)
+    # plt.show()
     return img
 
 
 # Функция для вычисления гистограммы направленных градиентов (HOG)
-def get_hog_feature(img):
-    global scale
-    img = Image.open(img)
-    img = img.resize((scale, scale))
-    buf = BytesIO()  # создание байтового буфера
-    img.save(buf, format='JPEG')  # сохранение изображения в формате JPEG
-    file_bytes = buf.getvalue()  # получение байтов из буфера
-    # декодирование JPEG в изображение cv2 (цветное)
+def get_hog_feature(file_bytes):
     img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8),
                        cv2.IMREAD_COLOR)
     # преобразование изображения в формат float64
@@ -47,26 +33,18 @@ def get_hog_feature(img):
                                  orientations=9, pixels_per_cell=(8, 8),
                                  cells_per_block=(2, 2), visualize=True,
                                  channel_axis=2)
-    hog_image = hog_image.reshape(scale, scale, 1)
     hog_image = numpy.array(hog_image)
     return hog_image
 
 
 # Функция для вычисления границ объектов с помощью оператора Собеля
-def get_sobel_edges(img):
-    global scale
-    img = Image.open(img)
-    img = img.resize((scale, scale))
-    buf = BytesIO()  # создание байтового буфера
-    img.save(buf, format='JPEG')  # сохранение изображения в формате JPEG
-    file_bytes = buf.getvalue()  # получение байтов из буфера
+def get_sobel_edges(file_bytes):
     # декодирование JPEG в изображение cv2 (цветное)
     img = cv2.imdecode(numpy.frombuffer(file_bytes, numpy.uint8),
                        cv2.IMREAD_COLOR)
     # преобразование изображения в формат float64
     img = tensorflow.image.convert_image_dtype(img, tensorflow.float32)
     sobel_edges = sobel(rgb2gray(img))
-    sobel_edges = sobel_edges.reshape(scale, scale, 1)
     sobel_edges = numpy.array(sobel_edges)
     return sobel_edges
 
@@ -89,7 +67,7 @@ def get_contours(img):
     # create an empty image for contours
     img_contours = numpy.uint8(numpy.zeros(
         (my_photo.shape[0], my_photo.shape[1]))
-        )
+    )
     cv2.drawContours(img_contours, contours, -1, (255, 255, 255), 1)
     img_contours = img_contours.reshape(scale, scale, 1)
     return img_contours
@@ -98,36 +76,86 @@ def get_contours(img):
 
 
 def get_feature(file_path, X):
+
+    img = Image.open(file_path)
+    img = img.resize((scale, scale))
+    buf = BytesIO()  # создание байтового буфера
+    img.save(buf, format='JPEG')  # сохранение изображения в формате JPEG
+    file_bytes = buf.getvalue()  # получение байтов из буфера
+
     # Extracting img feature
-    img = load_image(file_path)
+    img_color = load_image(file_bytes)
 
     # Extracting Mel Spectrogram feature
-    hog_feature = get_hog_feature(file_path)
+    hog_feature = get_hog_feature(file_bytes)
 
     # Extracting sobel_edges vector feature
-    sobel_edges = get_sobel_edges(file_path)
+    sobel_edges = get_sobel_edges(file_bytes)
 
-    features = numpy.concatenate((img, hog_feature, sobel_edges), axis=-1)
+    hog_feature = numpy.expand_dims(hog_feature, axis=-1)
+    sobel_edges = numpy.expand_dims(sobel_edges, axis=-1)
+
+    features = numpy.concatenate(
+        (img_color, hog_feature, sobel_edges), axis=-1)
     X[0, :, :, :] = features
-    return X
 
 # ---------------------------------------------------------------------------------#
 
 
 object_1 = ['Cat', 'Dog']
 
-loaded_model = load_model('model/pictures/my_model_pictures.keras')
+# Создание той же архитектуры модели
+loaded_model = tf.keras.Sequential([
+    tf.keras.layers.Conv2D(64, (2, 2), activation='relu',
+                           input_shape=(128, 128, 5)),
+    tf.keras.layers.MaxPooling2D(2, 2),
+    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(2, 2),
+    tf.keras.layers.Conv2D(256, (3, 3), activation='relu'),
+    tf.keras.layers.GlobalMaxPooling2D(),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(512, activation='relu'),
+    tf.keras.layers.Dropout(0.4),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.Dense(2, activation="softmax")
+])
 
-file_path = "fit\\pictures\\test_pictures\\dog.jpg"
-X = numpy.zeros((1, scale, scale, 3))
-feature = get_feature(file_path, X)
+# Компиляция модели перед загрузкой весов
+loaded_model.compile(
+    optimizer='adam',
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+# Загрузка весов
+loaded_model.load_weights('model\\pictures\\model_weights.h5')
+
+
+file_path = "fit\\pictures\\test_pictures\\dog1.jpg"
+X = numpy.zeros((1, scale, scale, 5))
+get_feature(file_path, X)
+feature = X
 y = loaded_model.predict(feature)
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Dog')
 
 file_path = "fit\\pictures\\test_pictures\\cat.jpg"
-X = numpy.zeros((1, scale, scale, 3))
-feature = get_feature(file_path, X)
+X = numpy.zeros((1, scale, scale, 5))
+get_feature(file_path, X)
+feature = X
+y = loaded_model.predict(feature)
+ind = numpy.argmax(y)
+print(object_1[ind], '=> Cat')
+
+file_path = "fit\\pictures\\test_pictures\\cat1.jpg"
+X = numpy.zeros((1, scale, scale, 5))
+get_feature(file_path, X)
+feature = X
 y = loaded_model.predict(feature)
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Cat')

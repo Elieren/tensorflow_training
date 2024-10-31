@@ -1,6 +1,6 @@
 import numpy
 import librosa
-from tensorflow.keras.models import load_model
+from tensorflow import keras
 
 
 def get_mfcc(wav_file_path):
@@ -69,7 +69,31 @@ genres_1 = ['Rock', 'Phonk', 'Synthwave', 'Jazz', 'EDM', 'Metal', 'Nightcore',
             'Dubstep', 'Score', 'Frenchcore', 'Uptempo', 'Speedcore', 'Terror',
             'Synth-rock']
 
-model = load_model('model/audio/my_model_music.keras')
+model = keras.models.Sequential([
+    keras.layers.Dense(512, activation="relu", name="dense_1",
+                       input_shape=(498,)),
+    keras.layers.Dense(256, activation="relu", name="dense_2"),
+    keras.layers.Dropout(0.2),
+    keras.layers.BatchNormalization(),
+    keras.layers.Dense(256, activation="relu", name="dense_3"),
+    keras.layers.BatchNormalization(),
+    keras.layers.Dense(256, activation="relu", name="dense_4"),
+    keras.layers.Dropout(0.3),
+    keras.layers.BatchNormalization(),
+    keras.layers.Dense(14, activation="softmax", name="predictions")
+])
+
+model.compile(
+    # Optimizer
+    optimizer='adam',
+    # Loss function to minimize
+    loss=keras.losses.SparseCategoricalCrossentropy(),
+    # List of metrics to monitor
+    metrics=['accuracy'],
+)
+
+model.load_weights('model\\audio\\model_weights.h5')
+
 
 file_path = "info/music/Phonk/MUKBANG-Haarper.wav"
 feature = get_feature(file_path)
