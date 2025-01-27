@@ -26,7 +26,7 @@ load_dotenv()
 endpoint_url = os.environ['URL_HOST']
 aws_access_key_id = os.environ['ACCESS_KEY']
 aws_secret_access_key = os.environ['SECRET_ACCESS_KEY']
-bucket = os.environ['BUCKET']
+bucket = "photos-dog-and-cat-dataset"
 
 #  ---------------------------------------------------------------#
 

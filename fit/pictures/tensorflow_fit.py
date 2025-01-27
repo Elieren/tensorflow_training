@@ -29,6 +29,14 @@ X_test, X_val, y_test, y_val = train_test_split(
     X_other, y_other, test_size=0.75, random_state=42
 )
 
+X_train = tf.convert_to_tensor(X_train, dtype=tf.float32)
+X_val = tf.convert_to_tensor(X_val, dtype=tf.float32)
+X_test = tf.convert_to_tensor(X_test, dtype=tf.float32)
+
+y_train = tf.convert_to_tensor(y_train, dtype=tf.int32)
+y_val = tf.convert_to_tensor(y_val, dtype=tf.int32)
+y_test = tf.convert_to_tensor(y_test, dtype=tf.int32)
+
 # define model
 model = tf.keras.Sequential([
     tf.keras.layers.Conv2D(64, (2, 2), activation='relu',

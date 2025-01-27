@@ -92,7 +92,7 @@ model.compile(
     metrics=['accuracy'],
 )
 
-model.load_weights('model\\audio\\model_weights.h5')
+model.load_weights('model\\audio\\model_weights.weights.h5')
 
 
 file_path = "info/music/Phonk/MUKBANG-Haarper.wav"

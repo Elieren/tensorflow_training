@@ -133,27 +133,19 @@ loaded_model.compile(
 )
 
 # Загрузка весов
-loaded_model.load_weights('model\\pictures\\model_weights.h5')
+loaded_model.load_weights('model\\pictures\\model_weights.weights.h5')
 
 
-file_path = "fit\\pictures\\test_pictures\\dog1.jpg"
-X = numpy.zeros((1, scale, scale, 5))
+file_path = "test\pictures\dog.jpg"
+X = numpy.zeros((1, scale, scale, 5), dtype=numpy.float32)
 get_feature(file_path, X)
 feature = X
 y = loaded_model.predict(feature)
 ind = numpy.argmax(y)
 print(object_1[ind], '=> Dog')
 
-file_path = "fit\\pictures\\test_pictures\\cat.jpg"
-X = numpy.zeros((1, scale, scale, 5))
-get_feature(file_path, X)
-feature = X
-y = loaded_model.predict(feature)
-ind = numpy.argmax(y)
-print(object_1[ind], '=> Cat')
-
-file_path = "fit\\pictures\\test_pictures\\cat1.jpg"
-X = numpy.zeros((1, scale, scale, 5))
+file_path = "test\pictures\cat.jpg"
+X = numpy.zeros((1, scale, scale, 5), dtype=numpy.float32)
 get_feature(file_path, X)
 feature = X
 y = loaded_model.predict(feature)

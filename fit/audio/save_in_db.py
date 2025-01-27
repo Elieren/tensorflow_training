@@ -17,15 +17,23 @@ load_dotenv()
 endpoint_url = os.environ['URL_HOST']
 aws_access_key_id = os.environ['ACCESS_KEY']
 aws_secret_access_key = os.environ['SECRET_ACCESS_KEY']
-bucket = os.environ['BUCKET']
+bucket = "music-dataset"
 
 #  ---------------------------------------------------------------#
+
+botocore_config = Config(
+    read_timeout=120,  # Увеличение времени ожидания
+    retries={
+        'max_attempts': 10,  # Увеличение количества попыток
+    },
+    signature_version='s3v4'  # Добавляем параметр версии подписи
+)
 
 s3 = boto3.client('s3',
                   endpoint_url=endpoint_url,
                   aws_access_key_id=aws_access_key_id,
                   aws_secret_access_key=aws_secret_access_key,
-                  config=Config(signature_version='s3v4'))
+                  config=botocore_config)
 
 
 def get_mfcc(y, sr):
@@ -51,15 +59,17 @@ def get_tonnetz(y, sr):
 def get_feature(key):
 
     audio_object = s3.get_object(Bucket=bucket, Key=key)
-    audio_data = audio_object['Body'].read()
+    audio_data = BytesIO()
 
-    audio_file = BytesIO(audio_data)
+    # Чтение данных по частям
+    for chunk in audio_object['Body'].iter_chunks(chunk_size=1024):
+        audio_data.write(chunk)
 
-    data, samplerate = sf.read(audio_file)
+    audio_data.seek(0)
 
-    audio_file.seek(0)
-
-    y, sr = librosa.load(audio_file, sr=samplerate, mono=True)
+    data, samplerate = sf.read(audio_data)
+    audio_data.seek(0)
+    y, sr = librosa.load(audio_data, sr=samplerate, mono=True)
 
     # Extracting MFCC feature
     mfcc = get_mfcc(y, sr)
@@ -92,7 +102,7 @@ def get_feature(key):
     tntz_feature = numpy.concatenate((tntz_mean, tntz_min, tntz_max))
 
     feature = numpy.concatenate((chroma_feature, melspectrogram_feature,
-                                mfcc_feature, tntz_feature))
+                                 mfcc_feature, tntz_feature))
     return feature
 
 # ---------------------------------------------------------------------------------#
@@ -116,10 +126,13 @@ _ = [objects.append(x.split('/')[0])
      for x in files if x.split('/')[0] not in objects]
 
 for x in files:
-    genre = x.split('/')[0]
-    features.append(get_feature(x))
-    labels.append(objects.index(genre))
-    print(f"🟢 {genre} --- {x.split('/')[1]}")
+    try:
+        genre = x.split('/')[0]
+        features.append(get_feature(x))
+        labels.append(objects.index(genre))
+        print(f"🟢 {genre} --- {x.split('/')[1]}")
+    except Exception as e:
+        print(e)
 
 # -------------------------------------------------------------------------#
 

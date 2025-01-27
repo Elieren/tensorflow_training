@@ -30,22 +30,18 @@ features_test, features_val, labels_test, labels_val = train_test_split(
     X_other, y_other, test_size=0.5, random_state=42
 )
 
-
-features_train = numpy.array(features_train)
-labels_train = numpy.array(labels_train)
-
 features_train = tensorflow.convert_to_tensor(features_train,
                                               dtype=tensorflow.float32)
 labels_train = tensorflow.convert_to_tensor(labels_train,
                                             dtype=tensorflow.int32)
 
-features_val = numpy.array(features_val)
-labels_val = numpy.array(labels_val)
-
 features_val = tensorflow.convert_to_tensor(features_val,
                                             dtype=tensorflow.float32)
 labels_val = tensorflow.convert_to_tensor(labels_val, dtype=tensorflow.int32)
 
+features_test = tensorflow.convert_to_tensor(features_test,
+                                             dtype=tensorflow.float32)
+labels_test = tensorflow.convert_to_tensor(labels_test, dtype=tensorflow.int32)
 # tensorflow.device('/device:GPU:0')
 
 
