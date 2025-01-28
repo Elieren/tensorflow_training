@@ -3,8 +3,6 @@ info/music
 experemental
 .venv
 *.dat
-*.keras
-*.h5
 fit/photo-recommendation
 fit/pictures/test_pictures
 .env
